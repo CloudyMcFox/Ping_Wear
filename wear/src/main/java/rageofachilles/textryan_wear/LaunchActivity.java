@@ -33,7 +33,7 @@ public class LaunchActivity extends Activity implements MessageApi.MessageListen
     GoogleApiClient mGoogleApiClient;
     private boolean mResolvingError=false;
 
-
+    // Timer handler and runner
     private Handler handler = new Handler();
     private Runnable runnable = new Runnable()
     {
@@ -57,9 +57,8 @@ public class LaunchActivity extends Activity implements MessageApi.MessageListen
                 Button btn = (Button) findViewById(R.id.btnCancel);
                 btn.setEnabled(false);
                 // Send Message to mobile
-                String message = "5084940433;Text from TextRyan!";
-                //Requires a new thread to avoid blocking the UI
-                new SendToDataLayerThread("/message_path", message).start();
+                // Requires a new thread to avoid blocking the UI
+                new SendToDataLayerThread("/message_path", "Send").start();
 
                 ((TextView) findViewById(R.id.lbl1)).setText("Sent!");
                 fSendCompleted = true;
@@ -86,16 +85,17 @@ public class LaunchActivity extends Activity implements MessageApi.MessageListen
                 .build();
         mGoogleApiClient.connect();
         this.setTitle("Text Ryan");
-        // Start Timer
-        handler.postAtTime(runnable, System.currentTimeMillis()+interval);
-        handler.postDelayed(runnable, interval);
 
         // Request SMS Permissions if needed
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS)
                 != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SEND_SMS}, 1);
-        }
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SEND_SMS}, 0);
+        } else {
 
+            // Start Timer
+            handler.postAtTime(runnable, System.currentTimeMillis() + interval);
+            handler.postDelayed(runnable, interval);
+        }
         final WatchViewStub stub = (WatchViewStub) findViewById(R.id.watch_view_stub);
 
         // Handle UI Elements
@@ -109,13 +109,11 @@ public class LaunchActivity extends Activity implements MessageApi.MessageListen
                      tv.setText("Sending in " + dCountdown + "...");
                  }
 
-
                  Button btn = (Button) findViewById(R.id.btnCancel);
 
                  if (null == btn) {
                      return;
                  }
-                 //Listener to send the message (it is just an example)
                  btn.setOnClickListener(new View.OnClickListener()
                  {
                      @Override
@@ -124,46 +122,25 @@ public class LaunchActivity extends Activity implements MessageApi.MessageListen
                          fCancelHit = true;
                          // Cancelling
                          ((TextView) findViewById(R.id.lbl1)).setText("Canceling!");
-                         Button btn = (Button) findViewById(R.id.btnCancel);
-                         btn.setEnabled(false);
+                         findViewById(R.id.btnCancel).setEnabled(false);
                      }
                  });
              }
          });
-
-
-//        final WatchViewStub stub = (WatchViewStub) findViewById(R.id.watch_view_stub);
-//        stub.setOnLayoutInflatedListener(new WatchViewStub.OnLayoutInflatedListener() {
-//            @Override
-//            public void onLayoutInflated(WatchViewStub stub) {
-//                Button btn = (Button) stub.findViewById(R.id.btnSend);
-//
-//                if(null == btn){
-//                    return;
-//                }
-//                //Listener to send the message (it is just an example)
-//                btn.setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-//                        String message = "Hello wearable\n Via the data layer";
-//                        //Requires a new thread to avoid blocking the UI
-//                        new SendToDataLayerThread("/message_path", message).start();
-//                    }
-//                });
-//            }
-//        });
-
     }// end OnCreate()
 
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
     {
-        if (requestCode == 1 && resultCode == RESULT_OK) {
-            String message = "5084940433;Text from TextRyan!";
-                        //Requires a new thread to avoid blocking the UI
-                        new SendToDataLayerThread("/message_path", message).start();
+        if (PackageManager.PERMISSION_GRANTED != grantResults[0]){
+            ((TextView) findViewById(R.id.lbl1)).setText("No SMS Permissions!");
+            findViewById(R.id.btnCancel).setEnabled(false);
+            return;
         }
+        // Start Timer
+        handler.postAtTime(runnable, System.currentTimeMillis()+interval);
+        handler.postDelayed(runnable, interval);
     }
     public class SendToDataLayerThread extends Thread {
 
@@ -192,12 +169,6 @@ public class LaunchActivity extends Activity implements MessageApi.MessageListen
 
     }
 
-//    @Override
-//    protected void onDestroy() {
-//        super.onDestroy();
-//        mGoogleApiClient.disconnect();
-//    }
-
 
     @Override
     protected void onStart() {
@@ -207,34 +178,6 @@ public class LaunchActivity extends Activity implements MessageApi.MessageListen
         }
     }
 
-//    /*
-//     * Resolve the node = the connected device to send the message to
-//     */
-//    private void resolveNode() {
-//
-//        Wearable.NodeApi.getConnectedNodes(mGoogleApiClient).setResultCallback(new ResultCallback<NodeApi.GetConnectedNodesResult>() {
-//            @Override
-//            public void onResult(NodeApi.GetConnectedNodesResult nodes) {
-//                for (Node node : nodes.getNodes()) {
-//                    mNode = node;
-//                }
-//            }
-//        });
-//    }
-
-//
-//    private void sendMessage( final String path, final String text ) {
-//        new Thread( new Runnable() {
-//            @Override
-//            public void run() {
-//                NodeApi.GetConnectedNodesResult nodes = Wearable.NodeApi.getConnectedNodes( mGoogleApiClient ).await();
-//                for(Node node : nodes.getNodes()) {
-//                    Wearable.MessageApi.sendMessage(
-//                            mGoogleApiClient, node.getId(), path, text.getBytes() ).await();
-//                }
-//            }
-//        }).start();
-//    }
 
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {

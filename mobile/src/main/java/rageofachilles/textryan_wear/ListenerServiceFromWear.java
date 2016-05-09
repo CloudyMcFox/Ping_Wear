@@ -1,6 +1,8 @@
 package rageofachilles.textryan_wear;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.google.android.gms.wearable.DataEventBuffer;
@@ -17,20 +19,20 @@ public class ListenerServiceFromWear extends WearableListenerService {
         Log.v("myTag", "onMessageReceived:");
 
         if (messageEvent.getPath().equals("/message_path")) {
-            final String message = new String(messageEvent.getData());
+            final String inputMessage = new String(messageEvent.getData());
             Log.d("TextRyan", "Message path received on watch is: " + messageEvent.getPath());
-            Log.d("myTag", "Message received on watch is: " + message);
+            Log.d("myTag", "Message received on watch is: " + inputMessage);
 
-//            // Launch phone app
-//            Intent startIntent = new Intent(this, MainActivity.class);
-//            startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//            startActivity(startIntent);
 
             // Just send text
             SendTextHelper sth = new SendTextHelper();
-            String[] messageArray = message.split(";");
-            if (2 == messageArray.length) {
-                sth.send(messageArray[0], messageArray[1]);
+            if (inputMessage.equals("Send")) {
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+                String message = prefs.getString("message","");
+                String number = prefs.getString("phoneNumber","");
+                //TODO: What happens if settings aren't set on app yet and wear app is used, need to handle.
+                //TODO: Validate number?? at least for default
+                sth.send(number, message);
             }
         }
         else {
