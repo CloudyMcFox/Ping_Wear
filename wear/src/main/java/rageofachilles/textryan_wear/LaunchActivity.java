@@ -28,7 +28,7 @@ public class LaunchActivity extends Activity implements MessageApi.MessageListen
     private int dCountdown = 3;  // Set in RunApp()
     boolean fSendCompleted = false;
     boolean fCancelHit = false;
-    boolean fHavePermission = false;
+    boolean m_fHavePermission = false;
 
 
     GoogleApiClient mGoogleApiClient;
@@ -131,7 +131,7 @@ public class LaunchActivity extends Activity implements MessageApi.MessageListen
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SEND_SMS}, 0);
         } else {
-            fHavePermission = true;
+            m_fHavePermission = true;
             // RunApp() will be called after inflation
         }
 
@@ -140,7 +140,7 @@ public class LaunchActivity extends Activity implements MessageApi.MessageListen
 
     protected void RunApp()
     {
-        if (!fHavePermission) {
+        if (!m_fHavePermission) {
             return;
         }
         handler.removeCallbacksAndMessages(null); // remove all callbacks
@@ -167,9 +167,10 @@ public class LaunchActivity extends Activity implements MessageApi.MessageListen
         if (PackageManager.PERMISSION_GRANTED != grantResults[0]) {
             ((TextView) findViewById(R.id.lbl1)).setText("No SMS Permissions!");
             findViewById(R.id.btnCancel).setEnabled(false);
-            fHavePermission = false;
+            m_fHavePermission = false;
             return;
         }
+        m_fHavePermission = true;
         RunApp();
     }
 
