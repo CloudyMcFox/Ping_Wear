@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -22,8 +22,16 @@
         android:layout_height="wrap_content"
         android:text="Cancel"
         android:id="@+id/btnCancel"
-        android:layout_marginTop="20dp"
         android:layout_below="@+id/lbl1"
         android:layout_centerHorizontal="true"/>
 
-</LinearLayout>
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Resend"
+        android:id="@+id/btnResend"
+        android:layout_below="@+id/btnCancel"
+        android:layout_centerHorizontal="true"/>
+
+</RelativeLayout>

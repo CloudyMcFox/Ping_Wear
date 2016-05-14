@@ -5,23 +5,28 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.DataEventBuffer;
+import com.google.android.gms.wearable.MessageApi;
 import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.Node;
+import com.google.android.gms.wearable.NodeApi;
+import com.google.android.gms.wearable.Wearable;
 import com.google.android.gms.wearable.WearableListenerService;
 
 /**
  * Created by Ryan on 5/1/2016.
  */
 public class ListenerServiceFromWear extends WearableListenerService {
+    GoogleApiClient m_GoogleApiClient;
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
-        Log.v("myTag", "onMessageReceived:");
+        Log.d("myTag", "onMessageReceived:");
 
         if (messageEvent.getPath().equals("/message_path")) {
             final String inputMessage = new String(messageEvent.getData());
-            Log.d("TextRyan", "Message path received on watch is: " + messageEvent.getPath());
-            Log.d("myTag", "Message received on watch is: " + inputMessage);
+            Log.v("TextRyan", "Message path received on phone is: " + messageEvent.getPath());
+            Log.v("myTag", "Message received on phone is: " + inputMessage);
 
 
             // Just send text
@@ -33,6 +38,16 @@ public class ListenerServiceFromWear extends WearableListenerService {
                 //TODO: What happens if settings aren't set on app yet and wear app is used, need to handle.
                 //TODO: Validate number?? at least for default
                 sth.send(number, message);
+
+
+                //Connect the GoogleApiClient
+                m_GoogleApiClient = new GoogleApiClient.Builder(this)
+                        .addApi(Wearable.API)
+                        .build();
+                m_GoogleApiClient.connect();
+
+                new SendToDataLayerThread("/message_path", "HiPhone").start();
+
             }
         }
         else {
@@ -43,5 +58,33 @@ public class ListenerServiceFromWear extends WearableListenerService {
     @Override
     public void onPeerConnected(Node peer) {
         Log.v("myTag", "onPeerConnected:");
+    }
+
+    public class SendToDataLayerThread extends Thread {
+
+        String path;
+        String message;
+
+        // Constructor to send a message to the data layer
+        SendToDataLayerThread(String p, String msg) {
+            path = p;
+            message = msg;
+        }
+
+        public void run() {
+            NodeApi.GetConnectedNodesResult nodes = Wearable.NodeApi.getConnectedNodes(m_GoogleApiClient).await();
+            for (Node node : nodes.getNodes()) {
+                MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(m_GoogleApiClient, node.getId(), path, message.getBytes()).await();
+                if (result.getStatus().isSuccess()) {
+                    Log.v("myTag", "Message: {" + message + "} sent from phone to: " + node.getDisplayName());
+                } else {
+                    // Log an error
+                    Log.v("myTag", "ERROR: failed to send Message");
+                }
+            }
+            m_GoogleApiClient.disconnect();
+
+        }
+
     }
 }

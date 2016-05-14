@@ -23,12 +23,13 @@ import com.google.android.gms.wearable.Wearable;
 
 public class LaunchActivity extends Activity implements MessageApi.MessageListener, GoogleApiClient.ConnectionCallbacks {
 
-    // UI variables
     private final int interval = 1000; // 1 Second timer
-    private int dCountdown = 3; // Give 3 seconds to cancel
+    private int dDefaultCount = 3; // Give 3 seconds to cancel
+    private int dCountdown = 3;  // Set in RunApp()
     boolean fSendCompleted = false;
     boolean fCancelHit = false;
-    // End UI Variables
+    boolean fHavePermission = false;
+
 
     GoogleApiClient mGoogleApiClient;
     private boolean mResolvingError=false;
@@ -41,8 +42,7 @@ public class LaunchActivity extends Activity implements MessageApi.MessageListen
         {
             // When cancel is hit, bail immediately
             if (fCancelHit && 0 >= dCountdown) { // Bail when we've cancelled AND we waited showing Cancelled for a bit (if hit at 0 then oh well)
-                finish();
-                System.exit(0);
+                return;
             }
             // Update counter
             dCountdown = dCountdown - 1;
@@ -86,16 +86,10 @@ public class LaunchActivity extends Activity implements MessageApi.MessageListen
         mGoogleApiClient.connect();
         this.setTitle("Text Ryan");
 
-        // Request SMS Permissions if needed
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SEND_SMS}, 0);
-        } else {
+        // Register listener to listen for messages from phone
+        Wearable.MessageApi.addListener(mGoogleApiClient, this);
 
-            // Start Timer
-            handler.postAtTime(runnable, System.currentTimeMillis() + interval);
-            handler.postDelayed(runnable, interval);
-        }
+
         final WatchViewStub stub = (WatchViewStub) findViewById(R.id.watch_view_stub);
 
         // Handle UI Elements
@@ -105,7 +99,7 @@ public class LaunchActivity extends Activity implements MessageApi.MessageListen
              public void onLayoutInflated(WatchViewStub stub)
              {
                  TextView tv = (TextView) findViewById(R.id.lbl1);
-                 if (tv != null) {
+                 if (null != tv) {
                      tv.setText("Sending in " + dCountdown + "...");
                  }
 
@@ -119,29 +113,80 @@ public class LaunchActivity extends Activity implements MessageApi.MessageListen
                      @Override
                      public void onClick(View v)
                      {
-                         fCancelHit = true;
-                         // Cancelling
-                         ((TextView) findViewById(R.id.lbl1)).setText("Canceling!");
-                         findViewById(R.id.btnCancel).setEnabled(false);
+                         cancelHit();
                      }
                  });
+                 (findViewById(R.id.btnResend)).setOnClickListener(new View.OnClickListener(){
+                     @Override
+                     public void onClick(View v) {
+                         RunApp();
+                     }
+                 });
+                 RunApp();
              }
          });
+        // Need to wait for inflate before accessing UI elements, so finally, check permissions or run app
+        // Request SMS Permissions if needed
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SEND_SMS}, 0);
+        } else {
+            fHavePermission = true;
+            // RunApp() will be called after inflation
+        }
+
     }// end OnCreate()
 
+
+    protected void RunApp()
+    {
+        if (!fHavePermission) {
+            return;
+        }
+        handler.removeCallbacksAndMessages(null); // remove all callbacks
+        dCountdown = dDefaultCount;
+        fCancelHit = false;
+        fSendCompleted = false;
+        // Retry button off by default unless cancel is hit
+        Button retryBtn = (Button)findViewById(R.id.btnResend);
+        retryBtn.setEnabled(false);
+        retryBtn.setVisibility(View.INVISIBLE);
+        // Cancel enabled by default
+        (findViewById(R.id.btnCancel)).setEnabled(true);
+
+        // Ready to send, start countdown
+        ((TextView) findViewById(R.id.lbl1)).setText("Sending in " + dCountdown + "...");
+        // Start Timer
+        handler.postDelayed(runnable, interval);
+    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
     {
-        if (PackageManager.PERMISSION_GRANTED != grantResults[0]){
+
+        if (PackageManager.PERMISSION_GRANTED != grantResults[0]) {
             ((TextView) findViewById(R.id.lbl1)).setText("No SMS Permissions!");
             findViewById(R.id.btnCancel).setEnabled(false);
+            fHavePermission = false;
             return;
         }
-        // Start Timer
-        handler.postAtTime(runnable, System.currentTimeMillis()+interval);
-        handler.postDelayed(runnable, interval);
+        RunApp();
     }
+
+    protected void cancelHit()
+    {
+        fCancelHit = true;
+        // Cancelling
+        ((TextView) findViewById(R.id.lbl1)).setText("Cancelled!");
+        Button btn = (Button)findViewById(R.id.btnCancel);
+        btn.setEnabled(false);
+
+        // enable retry button
+        Button retryBtn = (Button)findViewById(R.id.btnResend);
+        retryBtn.setEnabled(true);
+        retryBtn.setVisibility(View.VISIBLE);
+    }
+
     public class SendToDataLayerThread extends Thread {
 
         String path;
@@ -158,7 +203,7 @@ public class LaunchActivity extends Activity implements MessageApi.MessageListen
             for (Node node : nodes.getNodes()) {
                 MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(mGoogleApiClient, node.getId(), path, message.getBytes()).await();
                 if (result.getStatus().isSuccess()) {
-                    Log.v("myTag", "Message: {" + message + "} sent to: " + node.getDisplayName());
+                    Log.v("myTag", "Message: {" + message + "} sent from wear to: " + node.getDisplayName());
                 }
                 else {
                     // Log an error
@@ -178,11 +223,14 @@ public class LaunchActivity extends Activity implements MessageApi.MessageListen
         }
     }
 
-
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
-
+        Log.d("myTag", "onMessageReceived:");
+        final String inputMessage = new String(messageEvent.getData());
+        Log.v("TextRyan", "Message path received on watch is: " + messageEvent.getPath());
+        Log.v("myTag", "Message received on watch is: " + inputMessage);
     }
+
     @Override
     public void onConnected(Bundle bundle) {
         //Wearable.MessageApi.addListener(mGoogleApiClient, this);
