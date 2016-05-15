@@ -88,7 +88,6 @@ public class MainActivity extends AppCompatActivity {
         (findViewById(R.id.btnCancel)).setEnabled(true);
         // Check if there is a number in the settings
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        // then you use
         String number = prefs.getString("phoneNumber","");
         if (number.isEmpty() || number.startsWith("Enter") /* Default check */){
             // Default value, alert to add one

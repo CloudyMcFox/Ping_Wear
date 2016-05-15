@@ -5,31 +5,11 @@
     android:layout_height="match_parent"
     tools:context="rageofachilles.textryan_wear.LaunchActivity"
     tools:deviceIds="wear_round">
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="PlaceHolder"
-        android:id="@+id/lbl1"
-        android:layout_marginTop="63dp"
-        android:textSize="20dp"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"/>
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Cancel"
-        android:id="@+id/btnCancel"
-        android:layout_below="@+id/lbl1"
-        android:layout_centerHorizontal="true"/>
-
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Resend"
-        android:id="@+id/btnResend"
-        android:layout_below="@+id/btnCancel"
-        android:layout_centerHorizontal="true"/>
+    <android.support.v4.view.ViewPager
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/pager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
 </RelativeLayout>

@@ -1,0 +1,51 @@
+<!--<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+             <!--xmlns:tools="http://schemas.android.com/tools"-->
+             <!--android:layout_width="match_parent"-->
+             <!--android:layout_height="match_parent"-->
+             <!--tools:context="rageofachilles.textryan_wear.OpenOnPhoneFragment">-->
+
+    <!--&lt;!&ndash; TODO: Update blank fragment layout &ndash;&gt;-->
+    <!--<TextView-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:text="@string/hello_blank_fragment"/>-->
+
+<!--</FrameLayout>-->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                tools:context="rageofachilles.textryan_wear.LaunchActivity">
+
+    <android.support.wearable.view.WatchViewStub xmlns:android="http://schemas.android.com/apk/res/android"
+                                                 xmlns:app="http://schemas.android.com/apk/res-auto"
+                                                 xmlns:tools="http://schemas.android.com/tools"
+                                                 android:id="@+id/watch_view_stub_open"
+                                                 android:layout_width="match_parent"
+                                                 android:layout_height="match_parent"
+                                                 app:rectLayout="@layout/rect_activity_launch"
+                                                 app:roundLayout="@layout/round_activity_launch"
+                                                 tools:context="rageofachilles.textryan_wear.LaunchActivity"
+                                                 tools:deviceIds="wear"></android.support.wearable.view.WatchViewStub>
+
+    <Button
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:id="@+id/btnOpen"
+    android:background="@drawable/buttonshape"
+    android:layout_centerVertical="true"
+    android:layout_centerHorizontal="true"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Open On Phone"
+        android:id="@+id/tvOpen"
+        android:layout_below="@+id/btnOpen"
+        android:layout_centerHorizontal="true"
+        android:textSize="20dp"/>
+
+
+</RelativeLayout>

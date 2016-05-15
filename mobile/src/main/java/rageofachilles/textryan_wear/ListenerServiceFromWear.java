@@ -29,6 +29,13 @@ public class ListenerServiceFromWear extends WearableListenerService {
             Log.v("myTag", "Message received on phone is: " + inputMessage);
 
 
+            //Connect the GoogleApiClient
+            m_GoogleApiClient = new GoogleApiClient.Builder(this)
+                    .addApi(Wearable.API)
+                    .build();
+            m_GoogleApiClient.connect();
+
+
             // Just send text
             SendTextHelper sth = new SendTextHelper();
             if (inputMessage.equals("Send")) {
@@ -39,18 +46,20 @@ public class ListenerServiceFromWear extends WearableListenerService {
                 //TODO: Validate number?? at least for default
                 sth.send(number, message);
 
+            } else if (inputMessage.equals("GetNumber")) {
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+                final String number = prefs.getString("phoneNumber","");
+                new SendToDataLayerThread("/message_path", "Number:" + number).start();
 
-                //Connect the GoogleApiClient
-                m_GoogleApiClient = new GoogleApiClient.Builder(this)
-                        .addApi(Wearable.API)
-                        .build();
-                m_GoogleApiClient.connect();
-
-                new SendToDataLayerThread("/message_path", "HiPhone").start();
-
+            } else if (inputMessage.equals("Open")) {
+                Intent startIntent = new Intent(this, MainActivity.class);
+                startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(startIntent);
             }
-        }
-        else {
+
+            m_GoogleApiClient.disconnect();
+
+        } else {
             super.onMessageReceived(messageEvent);
         }
     }
@@ -82,8 +91,6 @@ public class ListenerServiceFromWear extends WearableListenerService {
                     Log.v("myTag", "ERROR: failed to send Message");
                 }
             }
-            m_GoogleApiClient.disconnect();
-
         }
 
     }
