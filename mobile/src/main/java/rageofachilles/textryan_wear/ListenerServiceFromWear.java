@@ -25,7 +25,7 @@ public class ListenerServiceFromWear extends WearableListenerService {
 
         if (messageEvent.getPath().equals("/message_path")) {
             final String inputMessage = new String(messageEvent.getData());
-            Log.v("TextRyan", "Message path received on phone is: " + messageEvent.getPath());
+            Log.v("myTag", "Message path received on phone is: " + messageEvent.getPath());
             Log.v("myTag", "Message received on phone is: " + inputMessage);
 
 
@@ -56,8 +56,6 @@ public class ListenerServiceFromWear extends WearableListenerService {
                 startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(startIntent);
             }
-
-            m_GoogleApiClient.disconnect();
 
         } else {
             super.onMessageReceived(messageEvent);
@@ -91,7 +89,7 @@ public class ListenerServiceFromWear extends WearableListenerService {
                     Log.v("myTag", "ERROR: failed to send Message");
                 }
             }
+            m_GoogleApiClient.disconnect();
         }
-
     }
 }
