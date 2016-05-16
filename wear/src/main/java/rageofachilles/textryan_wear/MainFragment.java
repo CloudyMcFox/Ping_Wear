@@ -25,7 +25,7 @@ import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
 
 
-public class MainFragment extends Fragment implements MessageApi.MessageListener, GoogleApiClient.ConnectionCallbacks
+public class MainFragment extends android.app.Fragment implements MessageApi.MessageListener, GoogleApiClient.ConnectionCallbacks
 {
     private final int interval = 1000; // 1 Second timer
     private int dDefaultCount = 3; // Give 3 seconds to cancel
@@ -100,9 +100,8 @@ public class MainFragment extends Fragment implements MessageApi.MessageListener
                     // Mimic cancelled hit
                     cancelHit();
                     // send them to the open on phone fragment
-                    LaunchActivity act = (LaunchActivity) getActivity();
-                    if (null != act) {
-                        act.mPager.setCurrentItem(1);
+                    if (null != m_hostActivity) {
+                        m_hostActivity.mPager.setCurrentItem(0,1);
                     }
                     return;
                 } else {
@@ -117,10 +116,13 @@ public class MainFragment extends Fragment implements MessageApi.MessageListener
                 }
             }
             if (timeoutWaitingForResponse * 1000 < timeWaitedForResponse) {
-                AlertDialog.Builder message = new AlertDialog.Builder(getContext());
-                message.setMessage("Timed out waiting for communication with phone.");
-                message.setPositiveButton("Ok", null);
-                message.show();
+                Context ctx = getContext();
+                if (null != ctx) {
+                    AlertDialog.Builder message = new AlertDialog.Builder(ctx);
+                    message.setMessage("Timed out waiting for communication with phone.");
+                    message.setPositiveButton("Ok", null);
+                    message.show();
+                }
                 //TODO: automatically show next fragment
                 cancelHit();
                 return; // end here we waited to long

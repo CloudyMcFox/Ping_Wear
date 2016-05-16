@@ -17,7 +17,7 @@ import com.google.android.gms.wearable.Wearable;
 
 
 
-public class OpenOnPhoneFragment extends Fragment
+public class OpenOnPhoneFragment extends android.app.Fragment
 {
     View m_view;
     LaunchActivity m_hostActivity;
@@ -110,7 +110,7 @@ public class OpenOnPhoneFragment extends Fragment
         thread.start();
         LaunchActivity act = (LaunchActivity) getActivity();
         if (null != act) {
-            act.mPager.setCurrentItem(0); // set back to main page
+            act.mPager.setCurrentItem(0,0); // set back to main page
         }
     }
 
