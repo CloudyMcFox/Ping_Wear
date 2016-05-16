@@ -108,6 +108,10 @@ public class OpenOnPhoneFragment extends Fragment
     {
         SendToDataLayerThread thread = new SendToDataLayerThread("/message_path", "Open");
         thread.start();
+        LaunchActivity act = (LaunchActivity) getActivity();
+        if (null != act) {
+            act.mPager.setCurrentItem(0); // set back to main page
+        }
     }
 
     public class SendToDataLayerThread extends Thread {

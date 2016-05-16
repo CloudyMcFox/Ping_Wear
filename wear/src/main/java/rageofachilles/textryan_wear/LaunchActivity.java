@@ -18,10 +18,10 @@ import com.google.android.gms.wearable.Wearable;
 public class LaunchActivity extends FragmentActivity implements GoogleApiClient.ConnectionCallbacks, OpenOnPhoneFragment.OnFragmentInteractionListener, MainFragment.OnFragmentInteractionListener
 {
     private static final int NUM_PAGES = 2;
-    private ViewPager mPager;
+    protected ViewPager mPager;
     private PagerAdapter mPagerAdapter;
 
-    GoogleApiClient mGoogleApiClient;
+    protected GoogleApiClient mGoogleApiClient;
     private boolean mResolvingError=false;
 
     @Override

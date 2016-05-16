@@ -99,6 +99,11 @@ public class MainFragment extends Fragment implements MessageApi.MessageListener
                     message.show();
                     // Mimic cancelled hit
                     cancelHit();
+                    // send them to the open on phone fragment
+                    LaunchActivity act = (LaunchActivity) getActivity();
+                    if (null != act) {
+                        act.mPager.setCurrentItem(1);
+                    }
                     return;
                 } else {
                     receivedResponse = false;
@@ -137,16 +142,6 @@ public class MainFragment extends Fragment implements MessageApi.MessageListener
     {
         super.onCreate(savedInstanceState);
 
-        // Need to wait for inflate before accessing UI elements, so finally, check permissions or run app
-        // Request SMS Permissions if needed
-        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.SEND_SMS)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.SEND_SMS}, 0);
-        } else {
-            m_fHavePermission = true;
-            // RunApp() will be called after inflation
-        }
-
     }// end OnCreate()
 
 
@@ -157,46 +152,55 @@ public class MainFragment extends Fragment implements MessageApi.MessageListener
         m_view = inflater.inflate(R.layout.fragment_main, container, false);
         m_hostActivity = (LaunchActivity)getActivity();
 
-        // Register listener to listen for messages from phone
-        Wearable.MessageApi.addListener(m_hostActivity.mGoogleApiClient, this);
-        // Inflate the layout for this fragment
-        final WatchViewStub stub = (WatchViewStub) m_view.findViewById(R.id.watch_view_stub);
-        // Handle UI Elements
-        stub.setOnLayoutInflatedListener(new WatchViewStub.OnLayoutInflatedListener()
-        {
-            @Override
-            public void onLayoutInflated(WatchViewStub stub)
+        // Need to wait for inflate before accessing UI elements, so finally, check permissions or run app
+        // Request SMS Permissions if needed
+        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.SEND_SMS)
+                != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions( new String[]{Manifest.permission.SEND_SMS}, 0);
+        } else {
+            m_fHavePermission = true;
+
+            // Register listener to listen for messages from phone
+            Wearable.MessageApi.addListener(m_hostActivity.mGoogleApiClient, this);
+            // Inflate the layout for this fragment
+            final WatchViewStub stub = (WatchViewStub) m_view.findViewById(R.id.watch_view_stub);
+            // Handle UI Elements
+            stub.setOnLayoutInflatedListener(new WatchViewStub.OnLayoutInflatedListener()
             {
-                TextView tv = (TextView) m_view.findViewById(R.id.lbl1);
-                if (null != tv) {
-                    tv.setText(""); // Will be set in RunApp()
-                }
-
-                Button btn = (Button) m_view.findViewById(R.id.btnCancel);
-
-                if (null == btn) {
-                    return;
-                }
-                btn.setOnClickListener(new View.OnClickListener()
+                @Override
+                public void onLayoutInflated(WatchViewStub stub)
                 {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        cancelHit();
+                    TextView tv = (TextView) m_view.findViewById(R.id.lbl1);
+                    if (null != tv) {
+                        tv.setText(""); // Will be set in RunApp()
                     }
-                });
 
-                (m_view.findViewById(R.id.btnResend)).setOnClickListener(new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        RunApp();
+                    Button btn = (Button) m_view.findViewById(R.id.btnCancel);
+
+                    if (null == btn) {
+                        return;
                     }
-                });
-                RunApp();
-            }
-        });
+                    btn.setOnClickListener(new View.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(View v)
+                        {
+                            cancelHit();
+                        }
+                    });
+
+                    (m_view.findViewById(R.id.btnResend)).setOnClickListener(new View.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(View v)
+                        {
+                            RunApp();
+                        }
+                    });
+                    RunApp();
+                }
+            });
+        }
         return m_view;
     }// end OnCreateView()
 
