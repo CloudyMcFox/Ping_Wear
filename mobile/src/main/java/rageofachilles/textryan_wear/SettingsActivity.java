@@ -3,24 +3,15 @@ package rageofachilles.textryan_wear;
 
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.content.Intent;
 import android.content.res.Configuration;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.support.v7.app.ActionBar;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-import android.preference.RingtonePreference;
-import android.support.v7.app.AlertDialog;
-import android.text.TextUtils;
-import android.view.MenuItem;
 
 import java.util.List;
 
@@ -66,6 +57,13 @@ public class SettingsActivity extends AppCompatPreferenceActivity
                 // simple string representation.
                 preference.setSummary(stringValue);
             }
+
+            // Check for valid phone number:
+            if (preference.getKey().equals("phoneNumber")){
+                if (null == value || value.equals("")) {
+                    return false;
+                }
+            }
             return true;
         }
     };
@@ -110,6 +108,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity
         // Display the fragment as the main content.
         getFragmentManager().beginTransaction()
                 .replace(android.R.id.content, new PrefsFragment()).commit();
+
     }
 
     /**
@@ -160,22 +159,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity
 
             // Load the preferences from an XML resource
             addPreferencesFromResource(R.xml.pref_general);
-            // TODO: validate input isnt empty? Something like the below:
-//            EditTextPreference edit_Pref = (EditTextPreference)
-//                    getPreferenceScreen().findPreference();
-//            edit_Pref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-//
-//                @Override
-//                public boolean onPreferenceChange(Preference preference, Object newValue) {
-//                    // put validation here..
-//                    if(newValue.equals("")){
-//                        AlertDialog.Builder message = new AlertDialog.Builder(getContext());
-//                        message.setMessage("Please enter a valid number");
-//                        message.setPositiveButton("Ok", null);
-//                        message.show();
-//                    }
-//                }
-//            });
+
             setHasOptionsMenu(true);
 
             // Bind the summaries of EditText/List/Dialog/Ringtone preferences
