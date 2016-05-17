@@ -22,7 +22,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity
+{
     private final int interval = 1000; // 1 Second timer
     private int dDefaultCount = 3; // Give 3 seconds to cancel
     private int dCountdown; // Set in RunApp()
@@ -32,8 +33,10 @@ public class MainActivity extends AppCompatActivity {
 
     // Timer Handlers
     private Handler handler = new Handler();
-    private Runnable runnable = new Runnable() {
-        public void run() {
+    private Runnable runnable = new Runnable()
+    {
+        public void run()
+        {
             TimerTick();
         }
     };
@@ -48,28 +51,39 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(myToolbar);
 
         // Set cancel buttons handler
-        (findViewById(R.id.btnCancel)).setOnClickListener(new View.OnClickListener() {
+        (findViewById(R.id.btnCancel)).setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View v) {
+            public void onClick(View v)
+            {
                 cancelHit();
             }
         });
 
-        (findViewById(R.id.btnRetry)).setOnClickListener(new View.OnClickListener(){
+        (findViewById(R.id.btnRetry)).setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View v) {
+            public void onClick(View v)
+            {
                 RunApp();
             }
         });
 
         ((TextView) findViewById(R.id.lbl1)).setText("");
 
+
+        // Request SMS Permissions if needed
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_CONTACTS}, 1);
+        }
+
         // Request SMS Permissions if needed
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SEND_SMS}, 1);
         } else {
-                RunApp();
+            RunApp();
         }
     } // end onCreate()
 
@@ -81,15 +95,15 @@ public class MainActivity extends AppCompatActivity {
         fCancelHit = false;
         fSendCompleted = false;
         // Retry button off by default unless cancel is hit
-        Button retryBtn = (Button)findViewById(R.id.btnRetry);
+        Button retryBtn = (Button) findViewById(R.id.btnRetry);
         retryBtn.setEnabled(false);
         retryBtn.setVisibility(View.INVISIBLE);
         // Cancel enabled by default
         (findViewById(R.id.btnCancel)).setEnabled(true);
         // Check if there is a number in the settings
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        String number = prefs.getString("phoneNumber","");
-        if (number.isEmpty() || number.startsWith("Enter") /* Default check */){
+        String number = prefs.getString("phoneNumber", "");
+        if (number.isEmpty() || number.startsWith("Enter") /* Default check */) {
             // Default value, alert to add one
             AlertDialog.Builder message = new AlertDialog.Builder(this);
             message.setMessage("Please set a phone number in the settings.");
@@ -112,11 +126,11 @@ public class MainActivity extends AppCompatActivity {
         fCancelHit = true;
         // Cancelling
         ((TextView) findViewById(R.id.lbl1)).setText("Cancelled!");
-        Button btn = (Button)findViewById(R.id.btnCancel);
+        Button btn = (Button) findViewById(R.id.btnCancel);
         btn.setEnabled(false);
 
         // enable retry button
-        Button retryBtn = (Button)findViewById(R.id.btnRetry);
+        Button retryBtn = (Button) findViewById(R.id.btnRetry);
         retryBtn.setEnabled(true);
         retryBtn.setVisibility(View.VISIBLE);
     }
@@ -129,26 +143,24 @@ public class MainActivity extends AppCompatActivity {
         }
         // Update counter
         dCountdown--;
-        if (!fCancelHit && !fSendCompleted && 0 < dCountdown ){
+        if (!fCancelHit && !fSendCompleted && 0 < dCountdown) {
             ((TextView) findViewById(R.id.lbl1)).setText("Sending in " + dCountdown + "...");
         } else if (!fCancelHit && !fSendCompleted) {
             ((TextView) findViewById(R.id.lbl1)).setText("Sending in " + 0 + "...");
         }
 
         // Haven't sent yet, but we have finish counting down
-        if (!fCancelHit && !fSendCompleted && 0 >= dCountdown )
-        {
+        if (!fCancelHit && !fSendCompleted && 0 >= dCountdown) {
             Button btn = (Button) findViewById(R.id.btnCancel);
             btn.setEnabled(false);
             // Check if there is a number in the settings
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
             String labelMessage;
-            String message = prefs.getString("message","");
-            String number = prefs.getString("phoneNumber","");
-            if(stHelper.send(number, message)) {
+            String message = prefs.getString("message", "");
+            String number = prefs.getString("phoneNumber", "");
+            if (stHelper.send(number, message)) {
                 labelMessage = "Sent!";
-            }
-            else {
+            } else {
                 labelMessage = "Error!";
             }
             ((TextView) findViewById(R.id.lbl1)).setText(labelMessage);
@@ -156,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Sent so leave
-        if ( fSendCompleted && -2 >= dCountdown) { // Bail when we've sent AND we waited showing Sent for 2 seconds
+        if (fSendCompleted && -2 >= dCountdown) { // Bail when we've sent AND we waited showing Sent for 2 seconds
             finish();
             System.exit(0);
         }
@@ -167,29 +179,35 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
     {
-        if (PackageManager.PERMISSION_GRANTED != grantResults[0]) {
-            ((TextView) findViewById(R.id.lbl1)).setText("No SMS Permissions!");
-            findViewById(R.id.btnCancel).setEnabled(false);
-            return;
+        for (int i =0 ; i < permissions.length && i < grantResults.length; i++) {
+            if (permissions[i].equals(Manifest.permission.SEND_SMS) && PackageManager.PERMISSION_GRANTED != grantResults[i]) {
+                ((TextView) findViewById(R.id.lbl1)).setText("No SMS Permissions!");
+                findViewById(R.id.btnCancel).setEnabled(false);
+                return;
+            }
         }
         RunApp();
     }
 
     @Override
-    public void onDestroy() {
+    public void onDestroy()
+    {
         super.onDestroy();
         android.os.Process.killProcess(android.os.Process.myPid());
     }
 
-// Menu Handlers
+    // Menu Handlers
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.settings, menu);
         return true;
     }
+
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
         switch (item.getItemId()) {
             // action with ID action_refresh was selected
             case R.id.menu_settings:

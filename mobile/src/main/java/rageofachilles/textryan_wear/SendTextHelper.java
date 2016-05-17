@@ -1,10 +1,7 @@
 package rageofachilles.textryan_wear;
 
-import android.provider.SyncStateContract;
 import android.telephony.SmsManager;
 import android.util.Log;
-import android.widget.Button;
-import android.widget.TextView;
 
 /**
  * Created by Ryan on 5/6/2016.

@@ -168,6 +168,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity
             // guidelines.
             bindPreferenceSummaryToValue(findPreference("phoneNumber"));
             bindPreferenceSummaryToValue(findPreference("message"));
+            bindPreferenceSummaryToValue(findPreference("phoneNumber2"));
+
         }
     }
 }
