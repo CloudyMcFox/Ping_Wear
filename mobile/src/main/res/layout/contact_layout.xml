@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent"
               android:padding="5dp" >
 
     <!--<ImageView-->
@@ -19,17 +19,29 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Ryan Offir"
-        android:textSize="50px" >
+        android:textSize="5pt"
+        android:layout_alignParentLeft="true">
+    </TextView>
+
+    <TextView
+        android:id="@+id/lblType"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Home Fax"
+        android:textSize="5pt"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="125dp"
+        android:layout_marginStart="125dp">
     </TextView>
 
     <TextView
         android:id="@+id/lblNumber"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="5084940433"
-        android:textSize="50px"
-        android:layout_marginLeft="50px">
+        android:textSize="5pt"
+        android:text="5555555555"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="190dp"
+        android:layout_marginStart="190dp">
     </TextView>
-
-
-</LinearLayout>
+</RelativeLayout>
