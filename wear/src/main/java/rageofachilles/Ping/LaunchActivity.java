@@ -1,16 +1,9 @@
-package rageofachilles.textryan_wear;
+package rageofachilles.Ping;
 
 import android.app.Activity;
 import android.os.Bundle;
 
-import android.support.v4.app.Fragment;
-
 import android.app.FragmentManager;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
-import android.support.wearable.activity.WearableActivity;
 import android.support.wearable.view.DotsPageIndicator;
 import android.support.wearable.view.FragmentGridPagerAdapter;
 import android.support.wearable.view.GridPagerAdapter;
@@ -41,7 +34,7 @@ public class LaunchActivity extends Activity implements GoogleApiClient.Connecti
                 .addApi(Wearable.API)
                 .build();
         mGoogleApiClient.connect();
-        this.setTitle("Text Ryan");
+        this.setTitle("Ping!");
 
         final WatchViewStub stub = (WatchViewStub) findViewById(R.id.watch_view_stub_activity);
 

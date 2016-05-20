@@ -7,7 +7,7 @@
 
 
     <!--Phone Number-->
-    <rageofachilles.textryan_wear.ContactDialogPreference
+    <rageofachilles.Ping.ContactDialogPreference
         android:id="@+id/cdpPhoneNumber"
         android:key="phoneNumber"
         android:title="Enter a Phone Number"

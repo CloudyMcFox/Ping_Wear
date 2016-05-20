@@ -1,4 +1,4 @@
-package rageofachilles.textryan_wear;
+package rageofachilles.Ping;
 
 import android.telephony.SmsManager;
 import android.util.Log;
@@ -9,7 +9,7 @@ import android.util.Log;
 
 public class SendTextHelper
 {
-    String TAG = "TextRyan_Wear";
+    String TAG = "tagPing";
     Boolean m_fSendSucceeded = false;
 
     public Boolean send(String phoneNumber, String message)

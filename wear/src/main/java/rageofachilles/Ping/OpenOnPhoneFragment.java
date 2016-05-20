@@ -1,8 +1,7 @@
-package rageofachilles.textryan_wear;
+package rageofachilles.Ping;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.wearable.view.WatchViewStub;
 import android.util.Log;
 import android.view.LayoutInflater;

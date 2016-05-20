@@ -1,4 +1,4 @@
-package rageofachilles.textryan_wear;
+package rageofachilles.Ping;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
