@@ -3,6 +3,7 @@ package rageofachilles.textryan_wear;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.preference.PreferenceActivity;
 import android.support.v7.app.ActionBar;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+
 
 import java.util.List;
 
@@ -28,6 +30,16 @@ import java.util.List;
  */
 public class SettingsActivity extends AppCompatPreferenceActivity
 {
+    private PreferenceFragment m_pf;
+
+    public void Update(String id, String value)
+    {
+        Preference pref = m_pf.findPreference(id);
+        pref.setSummary(value);
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPref.edit().putString(id, value).apply();
+    }
     /**
      * A preference value change listener that updates the preference's summary
      * to reflect its new value.
@@ -106,8 +118,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity
         super.onCreate(savedInstanceState);
         setupActionBar();
         // Display the fragment as the main content.
+        m_pf = new PrefsFragment(); // save fragment to use in Update()
         getFragmentManager().beginTransaction()
-                .replace(android.R.id.content, new PrefsFragment()).commit();
+                .replace(android.R.id.content, m_pf).commit();
 
     }
 
@@ -168,8 +181,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity
             // guidelines.
             bindPreferenceSummaryToValue(findPreference("phoneNumber"));
             bindPreferenceSummaryToValue(findPreference("message"));
-            bindPreferenceSummaryToValue(findPreference("phoneNumber2"));
-
         }
     }
 }

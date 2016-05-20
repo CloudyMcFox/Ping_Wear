@@ -7,32 +7,25 @@
 
 
     <!--Phone Number-->
-    <EditTextPreference
-    android:defaultValue="Enter a Phone Number"
-    android:inputType="phone"
-    android:key="phoneNumber"
-    android:maxLines="1"
-    android:selectAllOnFocus="true"
-    android:singleLine="true"
-    android:title="@string/pref_title_display_name"/>
+    <rageofachilles.textryan_wear.ContactDialogPreference
+        android:id="@+id/cdpPhoneNumber"
+        android:key="phoneNumber"
+        android:title="Enter a Phone Number"
+        android:dialogTitle="Enter a Phone Number"
+        android:positiveButtonText="@android:string/ok"
+        android:negativeButtonText="@android:string/cancel"
+        android:defaultValue="Default"/>
 
     <!--Message-->
     <EditTextPreference
         android:capitalize="sentences"
-        android:defaultValue="Text sent from TextRyan!"
+        android:defaultValue="Ping!"
         android:inputType="textCapSentences"
         android:key="message"
         android:maxLines="3"
         android:selectAllOnFocus="true"
         android:singleLine="true"
         android:title="Message"/>
-
-    <rageofachilles.textryan_wear.ContactDialogPreference
-        android:key="phoneNumber2"
-        android:title="Enter a Phone Number"
-        android:dialogTitle="Enter a Phone Number"
-        android:positiveButtonText="@android:string/ok"
-        android:negativeButtonText="@android:string/cancel" />
 
     <!--&lt;!&ndash; NOTE: Hide buttons to simplify the UI. Users can touch outside the dialog to-->
          <!--dismiss it. &ndash;&gt;-->

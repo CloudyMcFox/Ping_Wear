@@ -3,16 +3,20 @@ package rageofachilles.textryan_wear;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.preference.DialogPreference;
+import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
@@ -29,7 +33,7 @@ public class ContactDialogPreference extends DialogPreference
     private String HAS_PHONE_NUMBER = ContactsContract.Contacts.HAS_PHONE_NUMBER;
     private String PHONE_NUMBER = ContactsContract.CommonDataKinds.Phone.NUMBER;
     private int MAX_STRING = 20;
-
+    private EditText etNumberView;
     public ContactDialogPreference(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(context);
@@ -43,10 +47,17 @@ public class ContactDialogPreference extends DialogPreference
 
     @Override
     protected void onDialogClosed(boolean positiveResult) {
-        super.onDialogClosed(positiveResult);
-        if (positiveResult) {
-            // save shared preferences
+        if(!positiveResult) {
+            return;
         }
+        String number = etNumberView.getText().toString();
+        if (null == number || number.equals("")) {
+            return;
+        }
+
+        ((SettingsActivity)this.getContext()).Update("phoneNumber", number);
+        super.onDialogClosed(positiveResult);
+
     }
 
     private void init(Context context) {
@@ -121,12 +132,43 @@ public class ContactDialogPreference extends DialogPreference
     {
         ListView lv = ((ListView) view.findViewById(R.id.lvContact));
         ArrayList<Contact> contactList = getContacts();
-
-        // Get Contacts
-        getContacts();
-
+        etNumberView = ((EditText) view.findViewById(R.id.etNumber)); //Save view to access it ondialogclose
         // Set the ArrayAdapter as the ListView's adapter.
         lv.setAdapter( new ContactAdapter(getContext(), R.layout.contact_layout, contactList) );
+
+        // Set the etNumberView to the current number
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+        String number = prefs.getString("phoneNumber","");
+        etNumberView.setText(number);
+        // Now select all text on click
+        etNumberView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Highlight the text:
+                // From Stack Overflow:
+                // Problem caused by IME. If showed cursor drag pointer then selection must be zero width.
+                // You need cancel drag pointer. It can be done by change text.
+                // We replace first symbol of text with same symbol. It cause cancel drag pointer and allow make selection without bug.
+                etNumberView.selectAll();
+                if (etNumberView.getText().length() > 0) {
+                    etNumberView.getText().replace(0, 1, etNumberView.getText().subSequence(0, 1), 0, 1);
+                    etNumberView.selectAll();
+                }
+            }
+        });
+        etNumberView.setOnKeyListener(new View.OnKeyListener() {
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                // If the event is a key-down event on the "enter" button
+                if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                        (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                    // Perform action on key press
+                    onDialogClosed(true); // fake dialog close to update value.
+                    getDialog().dismiss();
+                    return true;
+                }
+                return false;
+            }
+        });
 
         super.onBindDialogView(view);
     }
@@ -161,6 +203,21 @@ public class ContactDialogPreference extends DialogPreference
             } else {
                 holder = (ViewHolder)row.getTag();
             }
+            final View.OnClickListener onClickListener = new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // first get the name
+                    String number = ((TextView)v.findViewById(R.id.lblNumber)).getText().toString();
+                    View parent = (View)v.getParent().getParent();// Contacts is first parent, Dialog is second.
+                    EditText et = (EditText)parent.findViewById(R.id.etNumber);
+                    if (null != et){
+                        et.setText(number);
+                    }
+
+                }
+            };
+            row.setOnClickListener(onClickListener);
+
 
             Contact person = data.get(position);
 
@@ -175,6 +232,8 @@ public class ContactDialogPreference extends DialogPreference
             return row;
         }
 
+
+
         class ViewHolder
         {
             TextView textView1;
@@ -182,6 +241,7 @@ public class ContactDialogPreference extends DialogPreference
             TextView textView3;
         }
     }
+
 
     public class Contact
     {
