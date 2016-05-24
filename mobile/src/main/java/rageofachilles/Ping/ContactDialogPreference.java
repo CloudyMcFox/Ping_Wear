@@ -15,6 +15,7 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -34,6 +35,7 @@ public class ContactDialogPreference extends DialogPreference
     private String PHONE_NUMBER = ContactsContract.CommonDataKinds.Phone.NUMBER;
     private int MAX_STRING = 20;
     private EditText etNumberView;
+    private String selectedPhoneNumber;
     public ContactDialogPreference(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(context);
@@ -55,7 +57,10 @@ public class ContactDialogPreference extends DialogPreference
             return;
         }
 
-        ((SettingsActivity)this.getContext()).Update("phoneNumber", number);
+        if (!selectedPhoneNumber.equals("")) {
+            ((SettingsActivity) this.getContext()).Update("phoneNumber", selectedPhoneNumber);
+        }
+        ((SettingsActivity)this.getContext()).Update("phoneNumberText", number);
         super.onDialogClosed(positiveResult);
 
     }
@@ -70,7 +75,7 @@ public class ContactDialogPreference extends DialogPreference
     {
         ContentResolver cr = getContext().getContentResolver();
 
-        String[] projection = new String[]{CONTACT_ID, DISPLAY_NAME, HAS_PHONE_NUMBER, Phone.TYPE, PHONE_NUMBER};
+        String[] projection = new String[]{ DISPLAY_NAME, HAS_PHONE_NUMBER, Phone.TYPE, PHONE_NUMBER};
 
         Cursor cursor = cr.query(QUERY_URI, projection, ContactsContract.Contacts.HAS_PHONE_NUMBER, null,  ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME+" ASC");
 
@@ -83,17 +88,16 @@ public class ContactDialogPreference extends DialogPreference
             String name = (cursor.getString(cursor.getColumnIndex(DISPLAY_NAME))).trim();
             final int typeIndex = cursor.getColumnIndex(Phone.TYPE);
             final int numberIndex = cursor.getColumnIndex(PHONE_NUMBER);
-
+            boolean isMultiple = false;
             int type = cursor.getInt(typeIndex);
             String phoneNumber = cursor.getString(numberIndex);
 
             if(name.equals(oldName)) {
-                oldName = name;
-                name = ""; // Don't display multiple names for same contact
+                isMultiple = true;
             } else {
                 oldName = name;
             }
-            contacts.add(new Contact(name, phoneNumber, TypeToString(type) ));
+            contacts.add(new Contact(name, phoneNumber, TypeToString(type), isMultiple));
             count++;
         }
         Log.v("myTag",""+count);
@@ -138,12 +142,15 @@ public class ContactDialogPreference extends DialogPreference
 
         // Set the etNumberView to the current number
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-        String number = prefs.getString("phoneNumber","");
+        String number = prefs.getString("phoneNumberText","");
         etNumberView.setText(number);
         // Now select all text on click
         etNumberView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                /*
+                * Commenting this out due not allowing inserting characters in front of text from contact.
+                * instead just remove text
                 // Highlight the text:
                 // From Stack Overflow:
                 // Problem caused by IME. If showed cursor drag pointer then selection must be zero width.
@@ -154,6 +161,8 @@ public class ContactDialogPreference extends DialogPreference
                     etNumberView.getText().replace(0, 1, etNumberView.getText().subSequence(0, 1), 0, 1);
                     etNumberView.selectAll();
                 }
+                */
+                etNumberView.setText("");
             }
         });
         etNumberView.setOnKeyListener(new View.OnKeyListener() {
@@ -206,18 +215,21 @@ public class ContactDialogPreference extends DialogPreference
             final View.OnClickListener onClickListener = new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    // remove keyboard if it exists
+                    InputMethodManager imm = (InputMethodManager)getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
                     // first get the name
                     String number = ((TextView)v.findViewById(R.id.lblNumber)).getText().toString();
+                    selectedPhoneNumber = number; // Save number to store in preferences on close
+                    String name = ((TextView)v.findViewById(R.id.lblName)).getText().toString();
                     View parent = (View)v.getParent().getParent();// Contacts is first parent, Dialog is second.
                     EditText et = (EditText)parent.findViewById(R.id.etNumber);
                     if (null != et){
-                        et.setText(number);
+                        et.setText(name+ "- " + number);
                     }
-
                 }
             };
             row.setOnClickListener(onClickListener);
-
 
             Contact person = data.get(position);
 
@@ -227,12 +239,15 @@ public class ContactDialogPreference extends DialogPreference
                 name = name.concat("...");
             }
             holder.textView1.setText(name);
+            if ( person.getIsMultiple()){
+                holder.textView1.setVisibility(View.INVISIBLE);
+            } else {
+                holder.textView1.setVisibility(View.VISIBLE);
+            }
             holder.textView2.setText(person.getType());
             holder.textView3.setText(person.getNumber());
             return row;
         }
-
-
 
         class ViewHolder
         {
@@ -248,11 +263,13 @@ public class ContactDialogPreference extends DialogPreference
         String name;
         String number;
         String type;
-        // Picture
-        public Contact (String input_name, String input_number, String input_type) {
+        boolean fIsMultiple = false; // Used to hide name label if its a multiple.
+
+        public Contact (String input_name, String input_number, String input_type, boolean isMultiple) {
             name = input_name;
             number = input_number;
             type = input_type;
+            fIsMultiple = isMultiple;
         }
 
         public String getName(){
@@ -265,6 +282,10 @@ public class ContactDialogPreference extends DialogPreference
 
         public String getType(){
             return type;
+        }
+
+        public boolean getIsMultiple(){
+            return fIsMultiple;
         }
     }
 }

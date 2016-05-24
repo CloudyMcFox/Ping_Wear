@@ -35,8 +35,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity
     public void Update(String id, String value)
     {
         Preference pref = m_pf.findPreference(id);
-        pref.setSummary(value);
-
+        if(null != pref) { // null is expected for "phoneNumber"
+            pref.setSummary(value);
+        }
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         sharedPref.edit().putString(id, value).apply();
     }
@@ -71,7 +72,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity
             }
 
             // Check for valid phone number:
-            if (preference.getKey().equals("phoneNumber")){
+            if (preference.getKey().equals("phoneNumberText")){
                 if (null == value || value.equals("")) {
                     return false;
                 }
@@ -179,7 +180,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity
             // to their values. When their values change, their summaries are
             // updated to reflect the new value, per the Android Design
             // guidelines.
-            bindPreferenceSummaryToValue(findPreference("phoneNumber"));
+            bindPreferenceSummaryToValue(findPreference("phoneNumberText"));
             bindPreferenceSummaryToValue(findPreference("message"));
         }
     }

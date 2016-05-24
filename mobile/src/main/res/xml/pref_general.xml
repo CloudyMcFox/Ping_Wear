@@ -9,7 +9,7 @@
     <!--Phone Number-->
     <rageofachilles.Ping.ContactDialogPreference
         android:id="@+id/cdpPhoneNumber"
-        android:key="phoneNumber"
+        android:key="phoneNumberText"
         android:title="Enter a Phone Number"
         android:dialogTitle="Enter a Phone Number"
         android:positiveButtonText="@android:string/ok"

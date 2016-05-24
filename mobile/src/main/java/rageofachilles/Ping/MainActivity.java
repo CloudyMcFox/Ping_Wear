@@ -156,7 +156,7 @@ public class MainActivity extends AppCompatActivity
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
             String labelMessage;
             String message = prefs.getString("message", "");
-            String number = prefs.getString("phoneNumber", "");
+            String number = prefs.getString("phoneNumber", ""); // send actual number, not text
             if (stHelper.send(number, message)) {
                 labelMessage = "Sent!";
             } else {
