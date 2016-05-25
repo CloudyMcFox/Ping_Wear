@@ -5,6 +5,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.preference.DialogPreference;
 import android.preference.PreferenceManager;
@@ -19,6 +20,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.SearchView;
 import android.widget.TextView;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import java.util.ArrayList;
@@ -57,8 +59,10 @@ public class ContactDialogPreference extends DialogPreference
             return;
         }
 
-        if (!selectedPhoneNumber.equals("")) {
+        if (null != selectedPhoneNumber && !selectedPhoneNumber.equals("")) {
             ((SettingsActivity) this.getContext()).Update("phoneNumber", selectedPhoneNumber);
+        } else {// null is expected when number is entered manually
+            ((SettingsActivity) this.getContext()).Update("phoneNumber", number);
         }
         ((SettingsActivity)this.getContext()).Update("phoneNumberText", number);
         super.onDialogClosed(positiveResult);
@@ -171,6 +175,8 @@ public class ContactDialogPreference extends DialogPreference
                 if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
                         (keyCode == KeyEvent.KEYCODE_ENTER)) {
                     // Perform action on key press
+                    // hack hack... clear selectedPhoneNumber to indicate to OnDialogClose that a contact was not click, but number entered manually
+                    selectedPhoneNumber = null;
                     onDialogClosed(true); // fake dialog close to update value.
                     getDialog().dismiss();
                     return true;
@@ -178,6 +184,7 @@ public class ContactDialogPreference extends DialogPreference
                 return false;
             }
         });
+
 
         super.onBindDialogView(view);
     }
