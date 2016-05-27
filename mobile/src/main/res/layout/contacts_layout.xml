@@ -52,6 +52,7 @@
         android:layout_alignEnd="@+id/etNumber"
         android:background="@drawable/custombackground"
         android:layout_marginRight="10dp"
-        android:inputType="textCapSentences|textNoSuggestions"/>
+        android:inputType="textCapSentences|textNoSuggestions"
+        android:clickable="true"/>
 
 </RelativeLayout>

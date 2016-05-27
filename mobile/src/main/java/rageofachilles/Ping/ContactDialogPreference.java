@@ -5,7 +5,6 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.net.Uri;
 import android.preference.DialogPreference;
 import android.preference.PreferenceManager;
@@ -14,6 +13,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -36,8 +36,13 @@ public class ContactDialogPreference extends DialogPreference
     private String HAS_PHONE_NUMBER = ContactsContract.Contacts.HAS_PHONE_NUMBER;
     private String PHONE_NUMBER = ContactsContract.CommonDataKinds.Phone.NUMBER;
     private int MAX_STRING = 20;
-    private EditText etNumberView;
+    private EditText m_etNumberView;
+    private SearchView m_etSearchView;
     private String selectedPhoneNumber;
+    private ArrayList<Contact> m_contactList = null;
+    private ArrayList<Contact> m_contactListSearchable = null;
+    ListView m_lv = null;
+
     public ContactDialogPreference(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(context);
@@ -54,7 +59,7 @@ public class ContactDialogPreference extends DialogPreference
         if(!positiveResult) {
             return;
         }
-        String number = etNumberView.getText().toString();
+        String number = m_etNumberView.getText().toString();
         if (null == number || number.equals("")) {
             return;
         }
@@ -78,11 +83,8 @@ public class ContactDialogPreference extends DialogPreference
     public ArrayList<Contact> getContacts()
     {
         ContentResolver cr = getContext().getContentResolver();
-
         String[] projection = new String[]{ DISPLAY_NAME, HAS_PHONE_NUMBER, Phone.TYPE, PHONE_NUMBER};
-
         Cursor cursor = cr.query(QUERY_URI, projection, ContactsContract.Contacts.HAS_PHONE_NUMBER, null,  ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME+" ASC");
-
         ArrayList<Contact> contacts = new ArrayList<>();
 
         String oldName = "";
@@ -135,21 +137,39 @@ public class ContactDialogPreference extends DialogPreference
         }
     }
 
+    public void hideSoftKeyboard(View v) {
+        InputMethodManager imm = (InputMethodManager)getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+    }
+
     @Override
     protected void onBindDialogView(View view)
     {
-        ListView lv = ((ListView) view.findViewById(R.id.lvContact));
-        ArrayList<Contact> contactList = getContacts();
-        etNumberView = ((EditText) view.findViewById(R.id.etNumber)); //Save view to access it ondialogclose
+        m_lv = ((ListView) view.findViewById(R.id.lvContact));
+        m_contactList = getContacts();
+        // copy contacts list to an editable one
+        m_contactListSearchable = (ArrayList<Contact>)m_contactList.clone();
+
+        m_etSearchView = ((SearchView) view.findViewById(R.id.etSearch));
+        m_etNumberView = ((EditText) view.findViewById(R.id.etNumber)); //Save view to access it ondialogclose
         // Set the ArrayAdapter as the ListView's adapter.
-        lv.setAdapter( new ContactAdapter(getContext(), R.layout.contact_layout, contactList) );
+        m_lv.setAdapter( new ContactAdapter(getContext(), R.layout.contact_layout, m_contactListSearchable) );
+
+        view.setOnTouchListener(new View.OnTouchListener() {
+            public boolean onTouch(View v, MotionEvent event) {
+                if(!(v instanceof EditText)) {
+                    hideSoftKeyboard(v);
+                }
+                return false;
+            }
+        });
 
         // Set the etNumberView to the current number
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
         String number = prefs.getString("phoneNumberText","");
-        etNumberView.setText(number);
-        // Now select all text on click
-        etNumberView.setOnClickListener(new View.OnClickListener() {
+        m_etNumberView.setText(number);
+
+        m_etNumberView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 /*
@@ -166,10 +186,10 @@ public class ContactDialogPreference extends DialogPreference
                     etNumberView.selectAll();
                 }
                 */
-                etNumberView.setText("");
+                m_etNumberView.setText("");
             }
         });
-        etNumberView.setOnKeyListener(new View.OnKeyListener() {
+        m_etNumberView.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 // If the event is a key-down event on the "enter" button
                 if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
@@ -182,6 +202,58 @@ public class ContactDialogPreference extends DialogPreference
                     return true;
                 }
                 return false;
+            }
+        });
+
+        m_etSearchView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                m_etSearchView.onActionViewExpanded();
+            }
+        });
+
+        m_etSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            public boolean onQueryTextChange(String newText) {
+                m_contactListSearchable = (ArrayList<Contact>)m_contactList.clone();
+                // Update contacts
+                if(newText.equals("")){
+                    m_lv.setAdapter( new ContactAdapter(getContext(), R.layout.contact_layout, m_contactList));
+                    return true;
+                }
+
+                for (int i =0; i < m_contactListSearchable.size(); i++) {
+                    Contact cnt = m_contactListSearchable.get(i);
+                    if (!cnt.getName().toLowerCase().contains(newText.toLowerCase())){ //if name does not match
+                        String searchString = newText.toLowerCase().replaceAll("[\\D]",""); // for number check remove all non digits
+                        if (searchString.equals("") || !cnt.getNumber().toLowerCase().replaceAll("[\\D]","").contains(searchString)){ // if number doesnt match
+
+                            m_contactListSearchable.remove(i);
+                            // since we removed one, lower i again
+                            i--;
+                        }
+                    }
+                }
+                // Unfortunately this now broke the hidden names as a phone number search may have hit on a hidden name. Need to re loop through :(
+                String oldName = "";
+                for (int i =0; i < m_contactListSearchable.size(); i++) {
+                    String newName = m_contactListSearchable.get(i).name;
+                    if (0 == i) {
+                        // set first one to true always
+                        m_contactListSearchable.get(i).setIsMultiple(false);
+                        oldName = newName;
+                        continue;
+                    }
+                    m_contactListSearchable.get(i).setIsMultiple(oldName.equals(newName) ? true: false);
+                    oldName = newName;
+                }
+
+                m_lv.setAdapter( new ContactAdapter(getContext(), R.layout.contact_layout, m_contactListSearchable));
+                return true;
+            }
+            public boolean onQueryTextSubmit(String query) {
+                // Do something
+                m_etSearchView.clearFocus();
+                return true;
             }
         });
 
@@ -223,8 +295,7 @@ public class ContactDialogPreference extends DialogPreference
                 @Override
                 public void onClick(View v) {
                     // remove keyboard if it exists
-                    InputMethodManager imm = (InputMethodManager)getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                    hideSoftKeyboard(v);
                     // first get the name
                     String number = ((TextView)v.findViewById(R.id.lblNumber)).getText().toString();
                     selectedPhoneNumber = number; // Save number to store in preferences on close
@@ -293,6 +364,10 @@ public class ContactDialogPreference extends DialogPreference
 
         public boolean getIsMultiple(){
             return fIsMultiple;
+        }
+
+        public void setIsMultiple(boolean input){
+            fIsMultiple = input;
         }
     }
 }
