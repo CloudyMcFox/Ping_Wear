@@ -1,6 +1,5 @@
 package rageofachilles.Ping;
 
-
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -16,7 +15,7 @@ import android.preference.PreferenceManager;
 
 
 import java.util.List;
-
+/** Most of this is template**/
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
  * handset devices, settings are presented as a single list. On tablets,

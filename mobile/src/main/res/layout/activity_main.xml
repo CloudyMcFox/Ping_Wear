@@ -42,8 +42,5 @@
         android:layout_below="@+id/btnCancel"
         android:layout_centerHorizontal="true"/>
 
-    <!--android:layout_below="@+id/lbl1"-->
-    <!--android:layout_toStartOf="@+id/lbl1"-->
-    <!--android:layout_alignEnd="@+id/lbl1" />-->
 </RelativeLayout>
 

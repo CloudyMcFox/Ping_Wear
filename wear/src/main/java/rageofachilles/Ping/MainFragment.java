@@ -25,21 +25,22 @@ import com.google.android.gms.wearable.Wearable;
 
 public class MainFragment extends android.app.Fragment implements MessageApi.MessageListener, GoogleApiClient.ConnectionCallbacks
 {
-    private final int interval = 1000; // 1 Second timer
-    private int dDefaultCount = 3; // Give 3 seconds to cancel
-    private int dCountdown;  // Set in RunApp()
-    boolean fSendCompleted = false;
-    boolean fCancelHit = false;
-    boolean m_fHavePermission = false;
-    View m_view;
-    LaunchActivity m_hostActivity;
+    private final String TAG = "pingTag";
+    private final int INTERVAL = 1000; // 1 Second timer
+    private int m_dDefaultCount = 3; // Give 3 seconds to cancel
+    private int m_dCountdown;  // Set in RunApp()
+    private boolean m_fSendCompleted = false;
+    private boolean m_fCancelHit = false;
+    private boolean m_fHavePermission = false;
+    private View m_view;
+    private LaunchActivity m_hostActivity;
 
     // Vars for waiting for number from phone
-    boolean receivedResponse = false;
-    String m_number;
-    final int timeoutWaitingForResponse = 5; // 5 seconds waiting for response.
-    int timeWaitedForResponse = 0;
-    private final int intervalResponse = 50; // 50 ms
+    private boolean m_fReceivedResponse = false;
+    private String m_number;
+    private final int TIMEOUT_WAITING_FOR_RESPONSE = 5; // 5 seconds waiting for response.
+    private int m_dTimeWaitedForResponse = 0;
+    private final int m_dIntervalResponse = 50; // 50 ms
 
 
     // Timer handler and runner
@@ -49,19 +50,19 @@ public class MainFragment extends android.app.Fragment implements MessageApi.Mes
         public void run()
         {
             // When cancel is hit, bail immediately
-            if (fCancelHit && 0 >= dCountdown) { // Bail when we've cancelled AND we waited showing Cancelled for a bit (if hit at 0 then oh well)
+            if (m_fCancelHit && 0 >= m_dCountdown) { // Bail when we've cancelled AND we waited showing Cancelled for a bit (if hit at 0 then oh well)
                 return;
             }
             // Update counter
-            dCountdown = dCountdown - 1;
-            if (!fCancelHit && !fSendCompleted && 0 < dCountdown) {
-                ((TextView) m_view.findViewById(R.id.lbl1)).setText("Sending in " + dCountdown + "...");
-            } else if (!fCancelHit && !fSendCompleted) {
+            m_dCountdown--;
+            if (!m_fCancelHit && !m_fSendCompleted && 0 < m_dCountdown) {
+                ((TextView) m_view.findViewById(R.id.lbl1)).setText("Sending in " + m_dCountdown + "...");
+            } else if (!m_fCancelHit && !m_fSendCompleted) {
                 ((TextView) m_view.findViewById(R.id.lbl1)).setText("Sending in " + 0 + "...");
             }
 
             // Haven't sent yet, but we have finish counting down
-            if (!fCancelHit && !fSendCompleted && 0 >= dCountdown) {
+            if (!m_fCancelHit && !m_fSendCompleted && 0 >= m_dCountdown) {
                 Button btn = (Button) m_view.findViewById(R.id.btnCancel);
                 btn.setEnabled(false);
                 // Send Message to mobile
@@ -71,16 +72,16 @@ public class MainFragment extends android.app.Fragment implements MessageApi.Mes
                 // Don't care to wait for thread to finish
 
                 ((TextView) m_view.findViewById(R.id.lbl1)).setText("Sent!");
-                fSendCompleted = true;
+                m_fSendCompleted = true;
             }
 
             // Sent so leave
-            if (fSendCompleted && -2 >= dCountdown) { // Bail when we've sent AND we waited showing Sent for 2 seconds
+            if (m_fSendCompleted && -2 >= m_dCountdown) { // Bail when we've sent AND we waited showing Sent for 2 seconds
                 m_hostActivity.finish();
                 System.exit(0);
             }
-            handler.postAtTime(runnable, System.currentTimeMillis() + interval);
-            handler.postDelayed(runnable, interval);
+            handler.postAtTime(runnable, System.currentTimeMillis() + INTERVAL);
+            handler.postDelayed(runnable, INTERVAL);
         }
     };
 
@@ -88,7 +89,7 @@ public class MainFragment extends android.app.Fragment implements MessageApi.Mes
     {
         public void run()
         {
-            if (receivedResponse) {
+            if (m_fReceivedResponse) {
                 if (null == m_number || m_number.isEmpty() || m_number.startsWith("Enter") /* Default check */){
                     // Default value, alert to add one
                     AlertDialog.Builder message = new AlertDialog.Builder(getContext());
@@ -103,17 +104,17 @@ public class MainFragment extends android.app.Fragment implements MessageApi.Mes
                     }
                     return;
                 } else {
-                    receivedResponse = false;
+                    m_fReceivedResponse = false;
                     // Ready to send, start countdown
                     // Cancel enabled by default
                     (m_view.findViewById(R.id.btnCancel)).setEnabled(true);
-                    ((TextView) m_view.findViewById(R.id.lbl1)).setText("Sending in " + dCountdown + "...");
+                    ((TextView) m_view.findViewById(R.id.lbl1)).setText("Sending in " + m_dCountdown + "...");
                     // Start Timer
-                    handler.postDelayed(runnable, interval);
+                    handler.postDelayed(runnable, INTERVAL);
                     return;
                 }
             }
-            if (timeoutWaitingForResponse * 1000 < timeWaitedForResponse) {
+            if (TIMEOUT_WAITING_FOR_RESPONSE * 1000 < m_dTimeWaitedForResponse) {
                 Context ctx = getContext();
                 if (null != ctx) {
                     AlertDialog.Builder message = new AlertDialog.Builder(ctx);
@@ -121,16 +122,13 @@ public class MainFragment extends android.app.Fragment implements MessageApi.Mes
                     message.setPositiveButton("Ok", null);
                     message.show();
                 }
-                //TODO: automatically show next fragment
                 cancelHit();
                 return; // end here we waited to long
             }
-            timeWaitedForResponse += intervalResponse;
-            handler.postDelayed(runnableCheckPhone, intervalResponse);
+            m_dTimeWaitedForResponse += m_dIntervalResponse;
+            handler.postDelayed(runnableCheckPhone, m_dIntervalResponse);
         }
     };
-
-    private OnFragmentInteractionListener mListener;
 
     public MainFragment()
     {
@@ -142,8 +140,7 @@ public class MainFragment extends android.app.Fragment implements MessageApi.Mes
     {
         super.onCreate(savedInstanceState);
 
-    }// end OnCreate()
-
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -211,9 +208,9 @@ public class MainFragment extends android.app.Fragment implements MessageApi.Mes
             return;
         }
         handler.removeCallbacksAndMessages(null); // remove all callbacks
-        dCountdown = dDefaultCount;
-        fCancelHit = false;
-        fSendCompleted = false;
+        m_dCountdown = m_dDefaultCount;
+        m_fCancelHit = false;
+        m_fSendCompleted = false;
         // Retry button off by default unless cancel is hit
         Button retryBtn = (Button)m_view.findViewById(R.id.btnResend);
         retryBtn.setEnabled(false);
@@ -221,13 +218,13 @@ public class MainFragment extends android.app.Fragment implements MessageApi.Mes
 
         // Get phone number by sending a message to phone
         ((TextView) m_view.findViewById(R.id.lbl1)).setText("");
-        receivedResponse = false;
-        timeWaitedForResponse = 0;
+        m_fReceivedResponse = false;
+        m_dTimeWaitedForResponse = 0;
         SendToDataLayerThread thread = new SendToDataLayerThread("/message_path", "GetNumber");
         thread.start();
 
         // Run timer to wait for response
-        handler.postDelayed(runnableCheckPhone, intervalResponse);
+        handler.postDelayed(runnableCheckPhone, m_dIntervalResponse);
 
     }
 
@@ -248,34 +245,24 @@ public class MainFragment extends android.app.Fragment implements MessageApi.Mes
     public void onAttach(Context context)
     {
         super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
     }
 
     @Override
     public void onDetach()
     {
         super.onDetach();
-        mListener = null;
         Wearable.MessageApi.removeListener(m_hostActivity.mGoogleApiClient, this);
-        //m_hostActivity.mGoogleApiClient.disconnect();
     }
-
 
     public interface OnFragmentInteractionListener
     {
-        // TODO: Update argument type and name
         void onMainFragmentInteraction(String string);
     }
 
+
     protected void cancelHit()
     {
-        fCancelHit = true;
-        // Cancelling
+        m_fCancelHit = true;
         ((TextView) m_view.findViewById(R.id.lbl1)).setText("Cancelled!");
         Button btn = (Button)m_view.findViewById(R.id.btnCancel);
         btn.setEnabled(false);
@@ -289,28 +276,28 @@ public class MainFragment extends android.app.Fragment implements MessageApi.Mes
     @Override
     public void onConnected(Bundle bundle)
     {
-        Log.v("myTag", "OnConnected");
+        Log.v(TAG, "OnConnected");
     }
 
     @Override
     public void onConnectionSuspended(int i)
     {
-        //Improve your code
+        // Do Nothing
     }
 
     @Override
     public void onMessageReceived(MessageEvent messageEvent)
     {
         final String inputMessage = new String(messageEvent.getData());
-        Log.v("myTag", "onMessageReceived");
+        Log.v(TAG, "onMessageReceived");
         if (inputMessage.startsWith("Number:"))
         {
             final String searchStr = "Number:";
             final int index = inputMessage.indexOf("Number:") + searchStr.length() ;
             m_number = inputMessage.substring(index);
-            Log.v("myTag", "onMessageReceived from Phone with number: " + m_number);
+            Log.v(TAG, "onMessageReceived from Phone with number: " + m_number);
         }
-        receivedResponse = true;
+        m_fReceivedResponse = true;
     }
 
     // TODO: make this a shared function!
@@ -330,11 +317,11 @@ public class MainFragment extends android.app.Fragment implements MessageApi.Mes
             for (Node node : nodes.getNodes()) {
                 MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(m_hostActivity.mGoogleApiClient, node.getId(), path, message.getBytes()).await();
                 if (result.getStatus().isSuccess()) {
-                    Log.v("myTag", "Message: {" + message + "} sent from wear to: " + node.getDisplayName());
+                    Log.v(TAG, "Message: {" + message + "} sent from wear to: " + node.getDisplayName());
                 }
                 else {
                     // Log an error
-                    Log.v("myTag", "ERROR: failed to send Message");
+                    Log.v(TAG, "ERROR: failed to send Message");
                 }
             }
         }

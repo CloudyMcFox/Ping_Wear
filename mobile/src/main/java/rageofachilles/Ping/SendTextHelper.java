@@ -9,8 +9,7 @@ import android.util.Log;
 
 public class SendTextHelper
 {
-    String TAG = "tagPing";
-    Boolean m_fSendSucceeded = false;
+    Boolean m_fSendSucceeded = false; // used in main timer to check if we sent yet
 
     public Boolean send(String phoneNumber, String message)
     {
@@ -19,7 +18,7 @@ public class SendTextHelper
             m_fSendSucceeded = true;
             return true;
         } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
+            Log.e("pingTag", e.getMessage());
             return false;
         }
     }

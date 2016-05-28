@@ -69,12 +69,12 @@ public class LaunchActivity extends Activity implements GoogleApiClient.Connecti
 
     @Override
     public void onConnected(Bundle bundle) {
-
+        // Do nothing
     }
 
     @Override
     public void onConnectionSuspended(int i) {
-
+        // Do nothing
     }
 
     @Override
@@ -86,38 +86,14 @@ public class LaunchActivity extends Activity implements GoogleApiClient.Connecti
     @Override
     public void onOpenOnPhoneFragmentInteraction(String string)
     {
-        Log.v("myTag","onFragmentInteraction: " + string);
+        Log.v("pingTag","onFragmentInteraction: " + string);
     }
 
     @Override
     public void onMainFragmentInteraction(String string)
     {
-        Log.v("myTag","onFragmentInteraction: " + string);
+        Log.v("pingTag","onFragmentInteraction: " + string);
     }
-
-//    private class FragmentPagerAdapter extends FragmentStatePagerAdapter
-//    {
-//        public FragmentPagerAdapter(FragmentManager fm) {
-//            super(fm);
-//        }
-//
-//        @Override
-//        public Fragment getItem(int position) {
-//            switch(position) {
-//                case 0: // Fragment # 0 - This is the main app
-//                    return new MainFragment();
-//                case 1: // Fragment # 0 - This will show the open on phone button
-//                    return new OpenOnPhoneFragment();
-//                default:
-//                    return null;
-//            }
-//        }
-//
-//        @Override
-//        public int getCount() {
-//            return NUM_PAGES;
-//        }
-//    }
 
     public class MyPagerAdapter extends FragmentGridPagerAdapter
     {
@@ -141,7 +117,7 @@ public class LaunchActivity extends Activity implements GoogleApiClient.Connecti
         @Override
         public int getRowCount()
         {
-            return 1;
+            return 1; // Horizontal only
         }
 
         @Override

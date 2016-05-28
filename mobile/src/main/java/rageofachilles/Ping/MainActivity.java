@@ -23,16 +23,16 @@ import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity
 {
-    private final int interval = 1000; // 1 Second timer
-    private int dDefaultCount = 3; // Give 3 seconds to cancel
-    private int dCountdown; // Set in RunApp()
-    boolean fSendCompleted = false;
-    boolean fCancelHit = false;
-    SendTextHelper stHelper = new SendTextHelper();
+    private final int m_dInterval = 1000; // 1 Second timer
+    private int m_dDefaultCount = 3; // Give 3 seconds to cancel
+    private int m_dCountdown; // Set in RunApp()
+    boolean m_fSendCompleted = false;
+    boolean m_fCancelHit = false;
+    SendTextHelper m_stHelper = new SendTextHelper();
 
     // Timer Handlers
-    private Handler handler = new Handler();
-    private Runnable runnable = new Runnable()
+    private Handler m_handler = new Handler();
+    private Runnable m_runnable = new Runnable()
     {
         public void run()
         {
@@ -70,8 +70,7 @@ public class MainActivity extends AppCompatActivity
 
         ((TextView) findViewById(R.id.lbl1)).setText("");
 
-
-        // Request SMS Permissions if needed
+        // Request read contacts if needed
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_CONTACTS}, 1);
@@ -89,10 +88,10 @@ public class MainActivity extends AppCompatActivity
     // Main function
     protected void RunApp()
     {
-        handler.removeCallbacksAndMessages(null); // remove all callbacks
-        dCountdown = dDefaultCount;
-        fCancelHit = false;
-        fSendCompleted = false;
+        m_handler.removeCallbacksAndMessages(null); // remove all callbacks
+        m_dCountdown = m_dDefaultCount;
+        m_fCancelHit = false;
+        m_fSendCompleted = false;
         // Retry button off by default unless cancel is hit
         Button retryBtn = (Button) findViewById(R.id.btnRetry);
         retryBtn.setEnabled(false);
@@ -114,15 +113,14 @@ public class MainActivity extends AppCompatActivity
         }
 
         // Ready to send, start countdown
-        ((TextView) findViewById(R.id.lbl1)).setText("Sending in " + dCountdown + "...");
+        ((TextView) findViewById(R.id.lbl1)).setText("Sending in " + m_dCountdown + "...");
         // Start Timer
-        //handler.postAtTime(runnable, System.currentTimeMillis()+interval);
-        handler.postDelayed(runnable, interval);
+        m_handler.postDelayed(m_runnable, m_dInterval);
     }
 
     protected void cancelHit()
     {
-        fCancelHit = true;
+        m_fCancelHit = true;
         // Cancelling
         ((TextView) findViewById(R.id.lbl1)).setText("Cancelled!");
         Button btn = (Button) findViewById(R.id.btnCancel);
@@ -137,42 +135,44 @@ public class MainActivity extends AppCompatActivity
     protected void TimerTick()
     {
         // When cancel is hit, bail immediately
-        if (fCancelHit && 0 >= dCountdown) { // Bail when we've cancelled AND we waited showing Cancelled for a bit (if hit at 0 then oh well)
+        if (m_fCancelHit && 0 >= m_dCountdown) { // Bail when we've cancelled AND we waited showing cancelled for a bit (if hit at 0 then oh well)
             return;
         }
         // Update counter
-        dCountdown--;
-        if (!fCancelHit && !fSendCompleted && 0 < dCountdown) {
-            ((TextView) findViewById(R.id.lbl1)).setText("Sending in " + dCountdown + "...");
-        } else if (!fCancelHit && !fSendCompleted) {
+        m_dCountdown--;
+
+        if (!m_fCancelHit && !m_fSendCompleted && 0 < m_dCountdown) {
+            ((TextView) findViewById(R.id.lbl1)).setText("Sending in " + m_dCountdown + "...");
+        } else if (!m_fCancelHit && !m_fSendCompleted) {
             ((TextView) findViewById(R.id.lbl1)).setText("Sending in " + 0 + "...");
         }
 
         // Haven't sent yet, but we have finish counting down
-        if (!fCancelHit && !fSendCompleted && 0 >= dCountdown) {
-            Button btn = (Button) findViewById(R.id.btnCancel);
-            btn.setEnabled(false);
+        if (!m_fCancelHit && !m_fSendCompleted && 0 >= m_dCountdown) {
+            Button btnCancel= (Button) findViewById(R.id.btnCancel);
+            btnCancel.setEnabled(false);
             // Check if there is a number in the settings
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
             String labelMessage;
             String message = prefs.getString("message", "");
             String number = prefs.getString("phoneNumber", ""); // send actual number, not text
-            if (stHelper.send(number, message)) {
+            if (m_stHelper.send(number, message)) {
                 labelMessage = "Sent!";
             } else {
                 labelMessage = "Error!";
             }
             ((TextView) findViewById(R.id.lbl1)).setText(labelMessage);
-            fSendCompleted = true;
+            m_fSendCompleted = true;
         }
 
         // Sent so leave
-        if (fSendCompleted && -2 >= dCountdown) { // Bail when we've sent AND we waited showing Sent for 2 seconds
+        if (m_fSendCompleted && -2 >= m_dCountdown) { // Bail when we've sent AND we waited showing Sent for 2 seconds
             finish();
             System.exit(0);
         }
-        //handler.postAtTime(runnable, System.currentTimeMillis()+interval);
-        handler.postDelayed(runnable, interval);
+
+        // Re-trigger timer to count again
+        m_handler.postDelayed(m_runnable, m_dInterval);
     }
 
     @Override
@@ -192,7 +192,7 @@ public class MainActivity extends AppCompatActivity
     public void onDestroy()
     {
         super.onDestroy();
-        android.os.Process.killProcess(android.os.Process.myPid());
+        android.os.Process.killProcess(android.os.Process.myPid()); // not needed?
     }
 
     // Menu Handlers
@@ -222,5 +222,5 @@ public class MainActivity extends AppCompatActivity
 
         return true;
     }
-// End Menu Handlers
+    // End Menu Handlers
 }

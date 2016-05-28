@@ -19,7 +19,7 @@ import android.view.ViewGroup;
 public abstract class AppCompatPreferenceActivity extends PreferenceActivity
 {
 
-    private AppCompatDelegate mDelegate;
+    private AppCompatDelegate m_delegate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -113,9 +113,9 @@ public abstract class AppCompatPreferenceActivity extends PreferenceActivity
 
     private AppCompatDelegate getDelegate()
     {
-        if (mDelegate == null) {
-            mDelegate = AppCompatDelegate.create(this, null);
+        if (null == m_delegate) {
+            m_delegate = AppCompatDelegate.create(this, null);
         }
-        return mDelegate;
+        return m_delegate;
     }
 }

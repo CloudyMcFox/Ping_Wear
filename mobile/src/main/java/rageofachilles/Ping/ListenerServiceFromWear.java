@@ -20,20 +20,18 @@ public class ListenerServiceFromWear extends WearableListenerService {
     GoogleApiClient m_GoogleApiClient;
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
-        Log.d("myTag", "onMessageReceived:");
+        Log.d("pingTag", "onMessageReceived:");
 
         if (messageEvent.getPath().equals("/message_path")) {
             final String inputMessage = new String(messageEvent.getData());
-            Log.v("myTag", "Message path received on phone is: " + messageEvent.getPath());
-            Log.v("myTag", "Message received on phone is: " + inputMessage);
-
+            Log.v("pingTag", "Message path received on phone is: " + messageEvent.getPath());
+            Log.v("pingTag", "Message received on phone is: " + inputMessage);
 
             //Connect the GoogleApiClient
             m_GoogleApiClient = new GoogleApiClient.Builder(this)
                     .addApi(Wearable.API)
                     .build();
             m_GoogleApiClient.connect();
-
 
             // Just send text
             SendTextHelper sth = new SendTextHelper();
@@ -63,29 +61,29 @@ public class ListenerServiceFromWear extends WearableListenerService {
 
     @Override
     public void onPeerConnected(Node peer) {
-        Log.v("myTag", "onPeerConnected:");
+        Log.v("pingTag", "onPeerConnected:");
     }
 
     public class SendToDataLayerThread extends Thread {
 
-        String path;
-        String message;
+        String m_path;
+        String m_message;
 
         // Constructor to send a message to the data layer
         SendToDataLayerThread(String p, String msg) {
-            path = p;
-            message = msg;
+            m_path = p;
+            m_message = msg;
         }
 
         public void run() {
             NodeApi.GetConnectedNodesResult nodes = Wearable.NodeApi.getConnectedNodes(m_GoogleApiClient).await();
             for (Node node : nodes.getNodes()) {
-                MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(m_GoogleApiClient, node.getId(), path, message.getBytes()).await();
+                MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(m_GoogleApiClient, node.getId(), m_path, m_message.getBytes()).await();
                 if (result.getStatus().isSuccess()) {
-                    Log.v("myTag", "Message: {" + message + "} sent from phone to: " + node.getDisplayName());
+                    Log.v("pingTag", "Message: {" + m_message + "} sent from phone to: " + node.getDisplayName());
                 } else {
                     // Log an error
-                    Log.v("myTag", "ERROR: failed to send Message");
+                    Log.e("pingTag", "ERROR: failed to send Message");
                 }
             }
             m_GoogleApiClient.disconnect();

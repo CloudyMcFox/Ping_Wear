@@ -30,18 +30,17 @@ import java.util.ArrayList;
  */
 public class ContactDialogPreference extends DialogPreference
 {
-    private Uri QUERY_URI = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
-    private String CONTACT_ID = ContactsContract.Contacts._ID;
-    private String DISPLAY_NAME = ContactsContract.Contacts.DISPLAY_NAME;
-    private String HAS_PHONE_NUMBER = ContactsContract.Contacts.HAS_PHONE_NUMBER;
-    private String PHONE_NUMBER = ContactsContract.CommonDataKinds.Phone.NUMBER;
-    private int MAX_STRING = 20;
+    private final Uri QUERY_URI = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
+    private final String DISPLAY_NAME = ContactsContract.Contacts.DISPLAY_NAME;
+    private final String HAS_PHONE_NUMBER = ContactsContract.Contacts.HAS_PHONE_NUMBER;
+    private final String PHONE_NUMBER = ContactsContract.CommonDataKinds.Phone.NUMBER;
+    private final int MAX_STRING = 20;
     private EditText m_etNumberView;
     private SearchView m_etSearchView;
-    private String selectedPhoneNumber;
+    private String m_selectedPhoneNumber;
     private ArrayList<Contact> m_contactList = null;
     private ArrayList<Contact> m_contactListSearchable = null;
-    ListView m_lv = null;
+    private ListView m_lv = null;
 
     public ContactDialogPreference(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
@@ -56,7 +55,7 @@ public class ContactDialogPreference extends DialogPreference
 
     @Override
     protected void onDialogClosed(boolean positiveResult) {
-        if(!positiveResult) {
+        if(!positiveResult) { // cancel button
             return;
         }
         String number = m_etNumberView.getText().toString();
@@ -64,20 +63,18 @@ public class ContactDialogPreference extends DialogPreference
             return;
         }
 
-        if (null != selectedPhoneNumber && !selectedPhoneNumber.equals("")) {
-            ((SettingsActivity) this.getContext()).Update("phoneNumber", selectedPhoneNumber);
+        if (null != m_selectedPhoneNumber && !m_selectedPhoneNumber.equals("")) {
+            ((SettingsActivity)this.getContext()).Update("phoneNumber", m_selectedPhoneNumber);
         } else {// null is expected when number is entered manually
-            ((SettingsActivity) this.getContext()).Update("phoneNumber", number);
+            ((SettingsActivity)this.getContext()).Update("phoneNumber", number);
         }
         ((SettingsActivity)this.getContext()).Update("phoneNumberText", number);
         super.onDialogClosed(positiveResult);
-
     }
 
     private void init(Context context) {
         setPersistent(false);
         setDialogLayoutResource(R.layout.contacts_layout);
-
     }
 
     public ArrayList<Contact> getContacts()
@@ -88,7 +85,6 @@ public class ContactDialogPreference extends DialogPreference
         ArrayList<Contact> contacts = new ArrayList<>();
 
         String oldName = "";
-        int count =0;
         while (cursor.moveToNext()) {
 
             String name = (cursor.getString(cursor.getColumnIndex(DISPLAY_NAME))).trim();
@@ -104,9 +100,7 @@ public class ContactDialogPreference extends DialogPreference
                 oldName = name;
             }
             contacts.add(new Contact(name, phoneNumber, TypeToString(type), isMultiple));
-            count++;
         }
-        Log.v("myTag",""+count);
         cursor.close();
         return contacts;
     }
@@ -157,7 +151,7 @@ public class ContactDialogPreference extends DialogPreference
 
         view.setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View v, MotionEvent event) {
-                if(!(v instanceof EditText)) {
+                if(!(v instanceof EditText)) { // don't hide keyboard if an text box was hit
                     hideSoftKeyboard(v);
                 }
                 return false;
@@ -196,7 +190,7 @@ public class ContactDialogPreference extends DialogPreference
                         (keyCode == KeyEvent.KEYCODE_ENTER)) {
                     // Perform action on key press
                     // hack hack... clear selectedPhoneNumber to indicate to OnDialogClose that a contact was not click, but number entered manually
-                    selectedPhoneNumber = null;
+                    m_selectedPhoneNumber = null;
                     onDialogClosed(true); // fake dialog close to update value.
                     getDialog().dismiss();
                     return true;
@@ -208,7 +202,7 @@ public class ContactDialogPreference extends DialogPreference
         m_etSearchView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                m_etSearchView.onActionViewExpanded();
+                m_etSearchView.onActionViewExpanded(); // allow whole text box to trigger search (not just far left)
             }
         });
 
@@ -224,19 +218,19 @@ public class ContactDialogPreference extends DialogPreference
                 for (int i =0; i < m_contactListSearchable.size(); i++) {
                     Contact cnt = m_contactListSearchable.get(i);
                     if (!cnt.getName().toLowerCase().contains(newText.toLowerCase())){ //if name does not match
-                        String searchString = newText.toLowerCase().replaceAll("[\\D]",""); // for number check remove all non digits
-                        if (searchString.equals("") || !cnt.getNumber().toLowerCase().replaceAll("[\\D]","").contains(searchString)){ // if number doesnt match
-
+                        String searchString = newText.toLowerCase().replaceAll("[\\D]",""); // for number check, remove all non digits
+                        if (searchString.equals("") || !cnt.getNumber().toLowerCase().replaceAll("[\\D]","").contains(searchString)){ // if number doesn't match
                             m_contactListSearchable.remove(i);
                             // since we removed one, lower i again
                             i--;
                         }
                     }
                 }
-                // Unfortunately this now broke the hidden names as a phone number search may have hit on a hidden name. Need to re loop through :(
+                // Unfortunately this now broke the hidden names as a phone number search may have hit on a hidden name. Need to re loop through
+                // Optimization: merge with loop above.
                 String oldName = "";
                 for (int i =0; i < m_contactListSearchable.size(); i++) {
-                    String newName = m_contactListSearchable.get(i).name;
+                    String newName = m_contactListSearchable.get(i).getName();
                     if (0 == i) {
                         // set first one to true always
                         m_contactListSearchable.get(i).setIsMultiple(false);
@@ -251,27 +245,25 @@ public class ContactDialogPreference extends DialogPreference
                 return true;
             }
             public boolean onQueryTextSubmit(String query) {
-                // Do something
                 m_etSearchView.clearFocus();
                 return true;
             }
         });
-
 
         super.onBindDialogView(view);
     }
 
     public class ContactAdapter extends ArrayAdapter<Contact>
     {
-        private final Context context;
-        private final ArrayList<Contact> data;
-        private final int layoutResourceId;
+        private final Context m_context;
+        private final ArrayList<Contact> m_data;
+        private final int m_layoutResourceId;
 
         public ContactAdapter(Context context, int layoutResourceId, ArrayList<Contact> data) {
             super(context, layoutResourceId, data);
-            this.context = context;
-            this.data = data;
-            this.layoutResourceId = layoutResourceId;
+            this.m_context = context;
+            this.m_data = data;
+            this.m_layoutResourceId = layoutResourceId;
         }
 
         @Override
@@ -280,8 +272,8 @@ public class ContactDialogPreference extends DialogPreference
             ViewHolder holder;
 
             if(row == null) {
-                LayoutInflater inflater = ((Activity)context).getLayoutInflater();
-                row = inflater.inflate(layoutResourceId, parent, false);
+                LayoutInflater inflater = ((Activity)m_context).getLayoutInflater();
+                row = inflater.inflate(m_layoutResourceId, parent, false);
 
                 holder = new ViewHolder();
                 holder.textView1 = (TextView)row.findViewById(R.id.lblName);
@@ -298,7 +290,7 @@ public class ContactDialogPreference extends DialogPreference
                     hideSoftKeyboard(v);
                     // first get the name
                     String number = ((TextView)v.findViewById(R.id.lblNumber)).getText().toString();
-                    selectedPhoneNumber = number; // Save number to store in preferences on close
+                    m_selectedPhoneNumber = number; // Save number to store in preferences on close
                     String name = ((TextView)v.findViewById(R.id.lblName)).getText().toString();
                     View parent = (View)v.getParent().getParent();// Contacts is first parent, Dialog is second.
                     EditText et = (EditText)parent.findViewById(R.id.etNumber);
@@ -309,7 +301,7 @@ public class ContactDialogPreference extends DialogPreference
             };
             row.setOnClickListener(onClickListener);
 
-            Contact person = data.get(position);
+            Contact person = m_data.get(position);
 
             String name = person.getName();
             if (name.length() > MAX_STRING) {
@@ -338,36 +330,36 @@ public class ContactDialogPreference extends DialogPreference
 
     public class Contact
     {
-        String name;
-        String number;
-        String type;
-        boolean fIsMultiple = false; // Used to hide name label if its a multiple.
+        private String m_name;
+        private String m_number;
+        private String m_type;
+        boolean m_fIsMultiple = false; // Used to hide name label if its a multiple.
 
         public Contact (String input_name, String input_number, String input_type, boolean isMultiple) {
-            name = input_name;
-            number = input_number;
-            type = input_type;
-            fIsMultiple = isMultiple;
+            m_name = input_name;
+            m_number = input_number;
+            m_type = input_type;
+            m_fIsMultiple = isMultiple;
         }
 
         public String getName(){
-            return name;
+            return m_name;
         }
 
         public String getNumber(){
-            return number;
+            return m_number;
         }
 
         public String getType(){
-            return type;
+            return m_type;
         }
 
         public boolean getIsMultiple(){
-            return fIsMultiple;
+            return m_fIsMultiple;
         }
 
         public void setIsMultiple(boolean input){
-            fIsMultiple = input;
+            m_fIsMultiple = input;
         }
     }
 }
