@@ -152,6 +152,9 @@ public class MainFragment extends android.app.Fragment implements MessageApi.Mes
         m_view = inflater.inflate(R.layout.fragment_main, container, false);
         m_hostActivity = (LaunchActivity)getActivity();
 
+        // Register listener to listen for messages from phone
+        Wearable.MessageApi.addListener(m_hostActivity.mGoogleApiClient, this);
+
         // Need to wait for inflate before accessing UI elements, so finally, check permissions or run app
         // Request SMS Permissions if needed
         if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.SEND_SMS)
@@ -160,8 +163,6 @@ public class MainFragment extends android.app.Fragment implements MessageApi.Mes
         } else {
             m_fHavePermission = true;
 
-            // Register listener to listen for messages from phone
-            Wearable.MessageApi.addListener(m_hostActivity.mGoogleApiClient, this);
             // Inflate the layout for this fragment
             final WatchViewStub stub = (WatchViewStub) m_view.findViewById(R.id.watch_view_stub);
             // Handle UI Elements
