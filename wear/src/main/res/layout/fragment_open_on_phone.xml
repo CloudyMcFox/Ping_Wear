@@ -3,7 +3,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
-                tools:context="rageofachilles.Ping.LaunchActivity">
+                tools:context="cloudstarsoftware.Ping.LaunchActivity">
 
     <android.support.wearable.view.WatchViewStub xmlns:android="http://schemas.android.com/apk/res/android"
                                                  xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -13,7 +13,7 @@
                                                  android:layout_height="match_parent"
                                                  app:rectLayout="@layout/rect_activity_launch"
                                                  app:roundLayout="@layout/round_activity_launch"
-                                                 tools:context="rageofachilles.Ping.LaunchActivity"
+                                                 tools:context="cloudstarsoftware.Ping.LaunchActivity"
                                                  tools:deviceIds="wear"></android.support.wearable.view.WatchViewStub>
 
     <Button

@@ -1,4 +1,4 @@
-package rageofachilles.Ping;
+package cloudstarsoftware.Ping;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -17,15 +17,16 @@ import com.google.android.gms.wearable.WearableListenerService;
  * Created by Ryan on 5/1/2016.
  */
 public class ListenerServiceFromWear extends WearableListenerService {
+    final String TAG = "Ping:ListenerSvcFrmWear";
     GoogleApiClient m_GoogleApiClient;
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
-        Log.d("pingTag", "onMessageReceived:");
+        Log.d(TAG, "onMessageReceived:");
 
         if (messageEvent.getPath().equals("/message_path")) {
             final String inputMessage = new String(messageEvent.getData());
-            Log.v("pingTag", "Message path received on phone is: " + messageEvent.getPath());
-            Log.v("pingTag", "Message received on phone is: " + inputMessage);
+            Log.v(TAG, "Message path received on phone is: " + messageEvent.getPath());
+            Log.v(TAG, "Message received on phone is: " + inputMessage);
 
             //Connect the GoogleApiClient
             m_GoogleApiClient = new GoogleApiClient.Builder(this)

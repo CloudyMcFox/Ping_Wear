@@ -1,4 +1,4 @@
-package rageofachilles.Ping;
+package cloudstarsoftware.Ping;
 
 import android.annotation.TargetApi;
 import android.content.Context;

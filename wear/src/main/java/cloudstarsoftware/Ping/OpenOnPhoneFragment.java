@@ -1,4 +1,4 @@
-package rageofachilles.Ping;
+package cloudstarsoftware.Ping;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -18,6 +18,7 @@ import com.google.android.gms.wearable.Wearable;
 
 public class OpenOnPhoneFragment extends android.app.Fragment
 {
+    private final String TAG = "Ping!:WearOpenPhoneFrag";
     View m_view;
     LaunchActivity m_hostActivity;
 
@@ -129,11 +130,11 @@ public class OpenOnPhoneFragment extends android.app.Fragment
             for (Node node : nodes.getNodes()) {
                 MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(m_hostActivity.mGoogleApiClient, node.getId(), path, message.getBytes()).await();
                 if (result.getStatus().isSuccess()) {
-                    Log.v("myTag", "Message: {" + message + "} sent from wear to: " + node.getDisplayName());
+                    Log.v(TAG, "Message: {" + message + "} sent from wear to: " + node.getDisplayName());
                 }
                 else {
                     // Log an error
-                    Log.v("myTag", "ERROR: failed to send Message");
+                    Log.v(TAG, "ERROR: failed to send Message");
                 }
             }
         }

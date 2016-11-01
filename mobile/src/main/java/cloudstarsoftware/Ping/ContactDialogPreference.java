@@ -1,4 +1,4 @@
-package rageofachilles.Ping;
+package cloudstarsoftware.Ping;
 
 import android.app.Activity;
 import android.content.ContentResolver;
@@ -10,7 +10,6 @@ import android.preference.DialogPreference;
 import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;

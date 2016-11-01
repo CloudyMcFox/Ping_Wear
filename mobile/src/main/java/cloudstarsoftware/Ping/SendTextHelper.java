@@ -1,5 +1,6 @@
-package rageofachilles.Ping;
+package cloudstarsoftware.Ping;
 
+import android.content.Context;
 import android.telephony.SmsManager;
 import android.util.Log;
 
@@ -9,16 +10,15 @@ import android.util.Log;
 
 public class SendTextHelper
 {
-    Boolean m_fSendSucceeded = false; // used in main timer to check if we sent yet
+    final String TAG = "Ping!:SendTextHelper";
 
     public Boolean send(String phoneNumber, String message)
     {
         try {
             SmsManager.getDefault().sendTextMessage(phoneNumber, null, message, null, null);
-            m_fSendSucceeded = true;
             return true;
         } catch (Exception e) {
-            Log.e("pingTag", e.getMessage());
+            Log.e(TAG, e.getMessage());
             return false;
         }
     }

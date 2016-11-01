@@ -1,4 +1,4 @@
-package rageofachilles.Ping;
+package cloudstarsoftware.Ping;
 
 import android.Manifest;
 
@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -21,8 +22,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity
 {
+    private final String TAG = "Ping!:MainActivity";
     private final int m_dInterval = 1000; // 1 Second timer
     private int m_dDefaultCount = 3; // Give 3 seconds to cancel
     private int m_dCountdown; // Set in RunApp()
@@ -46,7 +50,7 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         this.setTitle("Ping!");
-        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(myToolbar);
 
         // Set cancel buttons handler
@@ -71,17 +75,27 @@ public class MainActivity extends AppCompatActivity
         ((TextView) findViewById(R.id.lbl1)).setText("");
 
         // Request read contacts if needed
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_CONTACTS}, 1);
+        Boolean fNeedsSmsPerm = ContextCompat.
+                checkSelfPermission(this, Manifest.permission.SEND_SMS)!= PackageManager.PERMISSION_GRANTED;
+        Boolean fNeedsContactsPerm = ContextCompat.
+                checkSelfPermission(this, Manifest.permission.READ_CONTACTS)!= PackageManager.PERMISSION_GRANTED;
+
+        ArrayList<String> permList = new ArrayList<>();
+        if (fNeedsSmsPerm) {
+            permList.add(Manifest.permission.SEND_SMS);
+        }
+        if (fNeedsContactsPerm) {
+            permList.add(Manifest.permission.READ_CONTACTS);
         }
 
-        // Request SMS Permissions if needed
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SEND_SMS}, 1);
-        } else {
+        if (permList.isEmpty()) {
             RunApp();
+        } else {
+            try{
+                ActivityCompat.requestPermissions(this, permList.toArray(new String[permList.size()]), 1);
+            } catch (Exception exp) {
+                Log.e(TAG, exp.getMessage());
+            }
         }
     } // end onCreate()
 
@@ -149,7 +163,7 @@ public class MainActivity extends AppCompatActivity
 
         // Haven't sent yet, but we have finish counting down
         if (!m_fCancelHit && !m_fSendCompleted && 0 >= m_dCountdown) {
-            Button btnCancel= (Button) findViewById(R.id.btnCancel);
+            Button btnCancel = (Button) findViewById(R.id.btnCancel);
             btnCancel.setEnabled(false);
             // Check if there is a number in the settings
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -178,10 +192,13 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
     {
+        // Only check for SMS perms! We don't need READ_CONTACTS to send SMS...
         for (int i =0 ; i < permissions.length && i < grantResults.length; i++) {
             if (permissions[i].equals(Manifest.permission.SEND_SMS) && PackageManager.PERMISSION_GRANTED != grantResults[i]) {
-                ((TextView) findViewById(R.id.lbl1)).setText("No SMS Permissions!");
+                ((TextView) findViewById(R.id.lbl1)).setText("SMS Permissions Required!\nRestart the app.");
                 findViewById(R.id.btnCancel).setEnabled(false);
+                findViewById(R.id.btnRetry).setEnabled(false);
+                findViewById(R.id.toolbar).setVisibility(View.INVISIBLE);
                 return;
             }
         }

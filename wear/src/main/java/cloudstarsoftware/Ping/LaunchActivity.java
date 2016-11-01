@@ -1,4 +1,4 @@
-package rageofachilles.Ping;
+package cloudstarsoftware.Ping;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -17,6 +17,7 @@ import com.google.android.gms.wearable.Wearable;
 
 public class LaunchActivity extends Activity implements GoogleApiClient.ConnectionCallbacks, OpenOnPhoneFragment.OnFragmentInteractionListener, MainFragment.OnFragmentInteractionListener
 {
+    private final String TAG = "Ping!:WearLaunchAct";
     private static final int NUM_PAGES = 2;
     protected GridViewPager mPager;
     private GridPagerAdapter mPagerAdapter;
@@ -86,13 +87,13 @@ public class LaunchActivity extends Activity implements GoogleApiClient.Connecti
     @Override
     public void onOpenOnPhoneFragmentInteraction(String string)
     {
-        Log.v("pingTag","onFragmentInteraction: " + string);
+        Log.v(TAG,"onFragmentInteraction: " + string);
     }
 
     @Override
     public void onMainFragmentInteraction(String string)
     {
-        Log.v("pingTag","onFragmentInteraction: " + string);
+        Log.v(TAG,"onFragmentInteraction: " + string);
     }
 
     public class MyPagerAdapter extends FragmentGridPagerAdapter

@@ -7,7 +7,7 @@
 
 
     <!--Phone Number-->
-    <rageofachilles.Ping.ContactDialogPreference
+    <cloudstarsoftware.Ping.ContactDialogPreference
         android:id="@+id/cdpPhoneNumber"
         android:key="phoneNumberText"
         android:title="Enter a Phone Number"

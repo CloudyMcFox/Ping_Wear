@@ -13,7 +13,7 @@
         android:layout_height="match_parent"
         app:rectLayout="@layout/rect_activity_launch"
         app:roundLayout="@layout/round_activity_launch"
-        tools:context="rageofachilles.Ping.LaunchActivity"
+        tools:context="cloudstarsoftware.Ping.LaunchActivity"
         tools:deviceIds="wear"></android.support.wearable.view.WatchViewStub>
 
 </FrameLayout>

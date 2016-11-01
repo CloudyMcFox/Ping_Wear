@@ -1,4 +1,4 @@
-package rageofachilles.Ping;
+package cloudstarsoftware.Ping;
 
 import android.Manifest;
 import android.content.Context;
@@ -22,10 +22,9 @@ import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
 
-
 public class MainFragment extends android.app.Fragment implements MessageApi.MessageListener, GoogleApiClient.ConnectionCallbacks
 {
-    private final String TAG = "pingTag";
+    private final String TAG = "Ping!:WearMainFrag";
     private final int INTERVAL = 1000; // 1 Second timer
     private int m_dDefaultCount = 3; // Give 3 seconds to cancel
     private int m_dCountdown;  // Set in RunApp()
@@ -327,4 +326,6 @@ public class MainFragment extends android.app.Fragment implements MessageApi.Mes
         }
 
     }
+
+
 }

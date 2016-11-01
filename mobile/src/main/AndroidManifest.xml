@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="rageofachilles.Ping"
+          package="cloudstarsoftware.Ping"
           android:versionCode="1"
           android:versionName="1.0">
 
@@ -17,16 +17,15 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version"/>
 
-        <activity android:name="rageofachilles.Ping.MainActivity">
+        <activity android:name="cloudstarsoftware.Ping.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
-
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
 
         <service
-            android:name="rageofachilles.Ping.ListenerServiceFromWear"
+            android:name="cloudstarsoftware.Ping.ListenerServiceFromWear"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
@@ -40,7 +39,7 @@
         </service>
 
         <activity
-            android:name="rageofachilles.Ping.SettingsActivity"
+            android:name="cloudstarsoftware.Ping.SettingsActivity"
             android:label="@string/title_activity_settings">
         </activity>
     </application>
